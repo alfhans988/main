@@ -78,9 +78,10 @@ game.CoreGui:FindFirstChild("Darkrai").Enabled = true
 end
 end
 
-function DarkraiX:Window(text,gamenme,logo,keybind)
+function DarkraiX:Window(text,gamenme,logo,Player,keybind)
     local hubname = text
     local gamename = gamenme
+    local Player = Player
 	local uihide = false
 	local abc = false
 	local logo = logo or 0
@@ -89,6 +90,10 @@ function DarkraiX:Window(text,gamenme,logo,keybind)
 	local yoo = string.gsub(tostring(keybind),"Enum.KeyCode.","")
 	if gamename == "" then 
 	    gamename = ""..PlaceName.Name
+    end
+    
+    if PlayerName == "" then 
+	    PlayerName = ""..game:GetService("Players").LocalPlayer.Name
     end
 	
 	local Darkrai = Instance.new("ScreenGui") -- guess i am using hubname wrong
@@ -156,14 +161,14 @@ function DarkraiX:Window(text,gamenme,logo,keybind)
 	Hub.TextXAlignment = Enum.TextXAlignment.Left
 	
 	local Player = Instance.new("TextLabel")
-	Player.Name = "Hub"
+	Player.Name = "PlayerName"
 	Player.Parent = Top
 	Player.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 	Player.BackgroundTransparency = 1.000
 	Player.Position = UDim2.new(0, 120, 0, 0)
 	Player.Size = UDim2.new(0, 81, 0, 27)
 	Player.Font = Enum.Font.GothamSemibold
-	Player.Text = "  | "..gamename
+	Player.Text = "  | "..PlayerName
 	Player.TextColor3 = Color3.fromRGB(0,0,255)
 	Player.TextSize = 17.000
 	Player.TextXAlignment = Enum.TextXAlignment.Left
