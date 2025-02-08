@@ -648,6 +648,10 @@ vim:SendKeyEvent(true, keytoclick, false, game)
 Toggle:Destroy()
 
 end)
+
+local Corner2 = Instance.new("UICorner")
+Corner.Name = "Corner"
+Corner.Parent = Toggle
 	
 		MainWindow.Visible = false
 		UIHidden = true
