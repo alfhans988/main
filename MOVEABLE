@@ -624,15 +624,8 @@ function OrionLib:MakeWindow(WindowConfig)
 	MakeDraggable(DragPoint, MainWindow)
 
 	AddConnection(CloseBtn.MouseButton1Up, function()
-		MainWindow.Visible = false
-		UIHidden = true
-		OrionLib:MakeNotification({
-			Name = "Interface Hidden",
-			Content = "Tap Left Control to reopen the interface",
-			Time = 5
-		})
-		
-		local ScreenGui1 = Instance.new("ScreenGui")
+	
+	local ScreenGui1 = Instance.new("ScreenGui")
 ScreenGui.Name = "ScreenGui"
 ScreenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
 ScreenGui.ResetOnSpawn = false
@@ -655,6 +648,14 @@ vim:SendKeyEvent(true, keytoclick, false, game)
 Toggle:Destroy()
 
 end)
+	
+		MainWindow.Visible = false
+		UIHidden = true
+		OrionLib:MakeNotification({
+			Name = "Interface Hidden",
+			Content = "Tap Left Control to reopen the interface",
+			Time = 5
+		})
 		
 		WindowConfig.CloseCallback()
 	end)
