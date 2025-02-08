@@ -625,7 +625,11 @@ function OrionLib:MakeWindow(WindowConfig)
 
 	AddConnection(CloseBtn.MouseButton1Up, function()
 	
-	local ScreenGui1 = Instance.new("ScreenGui")
+local userInputService = game:GetService("UserInputService")
+
+if userInputService.TouchEnabled and not userInputService.KeyboardEnabled then
+
+    local ScreenGui1 = Instance.new("ScreenGui")
 ScreenGui1.Name = "ScreenGui"
 ScreenGui1.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
 ScreenGui1.ResetOnSpawn = false
@@ -653,6 +657,8 @@ local Corner2 = Instance.new("UICorner")
 Corner.Name = "Corner"
 Corner.Parent = Toggle
 	
+end
+
 		MainWindow.Visible = false
 		UIHidden = true
 		OrionLib:MakeNotification({
