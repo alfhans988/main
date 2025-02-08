@@ -654,8 +654,8 @@ Toggle:Destroy()
 end)
 
 local Corner2 = Instance.new("UICorner")
-Corner.Name = "Corner"
-Corner.Parent = Toggle
+Corner2.Name = "Corner"
+Corner2.Parent = Toggle
 	
 end
 
