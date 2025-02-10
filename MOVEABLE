@@ -628,8 +628,7 @@ function OrionLib:MakeWindow(WindowConfig)
 
 local userInputService1 = game:GetService("UserInputService")
 
-while true do
-    wait(0) -- Infinite loop running with no delay
+function Tisa()
     if userInputService1.TouchEnabled and not userInputService1.KeyboardEnabled then
         local ScreenGui1 = Instance.new("ScreenGui")
         ScreenGui1.Name = "ScreenGui"
@@ -659,8 +658,10 @@ while true do
         Corner2.Name = "Corner"
         Corner2.Parent = Toggle
 
-        break -- Stop the loop after creating the GUI
-    end
+        -- Stop the loop after creating the GUI
+end
+
+Tisa()
 end
 
 		MainWindow.Visible = false
