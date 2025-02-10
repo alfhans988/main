@@ -624,47 +624,44 @@ function OrionLib:MakeWindow(WindowConfig)
 	MakeDraggable(DragPoint, MainWindow)
 
 	AddConnection(CloseBtn.MouseButton1Up, function()
-	
-
-    local userInputService1 = game:GetService("UserInputService")
 
 
-if userInputService1.TouchEnabled and not userInputService1.KeyboardEnabled then
-    local ScreenGui1 = Instance.new("ScreenGui")
-ScreenGui1.Name = "ScreenGui"
-ScreenGui1.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
-ScreenGui1.ResetOnSpawn = false
- local Toggle = Instance.new("TextButton")
-Toggle.Name = "Toggle"
-Toggle.Parent = ScreenGui1
-Toggle.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-Toggle.Position = UDim2.new(0, 0, 0.454706937, 0)
-Toggle.Size = UDim2.new(0, 90, 0, 38)
-Toggle.Font = Enum.Font.SourceSans
-Toggle.Text = "Open Ui"
-Toggle.TextColor3 = Color3.fromRGB(248, 248, 248)
-Toggle.TextSize = 28.000
-Toggle.Draggable = true
-Toggle.MouseButton1Click:connect(function()
-    getgenv().keytoclick = "LeftControl"
+local userInputService1 = game:GetService("UserInputService")
 
-        local vim = game:service("VirtualInputManager")
-vim:SendKeyEvent(true, keytoclick, false, game)
-Toggle:Destroy()
+while true do
+    wait(0) -- Infinite loop running with no delay
+    if userInputService1.TouchEnabled and not userInputService1.KeyboardEnabled then
+        local ScreenGui1 = Instance.new("ScreenGui")
+        ScreenGui1.Name = "ScreenGui"
+        ScreenGui1.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+        ScreenGui1.ResetOnSpawn = false
 
-end)
+        local Toggle = Instance.new("TextButton")
+        Toggle.Name = "Toggle"
+        Toggle.Parent = ScreenGui1
+        Toggle.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+        Toggle.Position = UDim2.new(0, 0, 0.454706937, 0)
+        Toggle.Size = UDim2.new(0, 90, 0, 38)
+        Toggle.Font = Enum.Font.SourceSans
+        Toggle.Text = "Open Ui"
+        Toggle.TextColor3 = Color3.fromRGB(248, 248, 248)
+        Toggle.TextSize = 28.000
+        Toggle.Draggable = true
 
-local Corner2 = Instance.new("UICorner")
-Corner2.Name = "Corner"
-Corner2.Parent = Toggle
+        Toggle.MouseButton1Click:connect(function()
+            getgenv().keytoclick = "LeftControl"
+            local vim = game:service("VirtualInputManager")
+            vim:SendKeyEvent(true, keytoclick, false, game)
+            Toggle:Destroy()
+        end)
 
-elseif userInputService1.KeyboardEnabled and userInputService1.MouseEnabled then
-    
-elseif userInputService1.GamepadEnabled then
-    
+        local Corner2 = Instance.new("UICorner")
+        Corner2.Name = "Corner"
+        Corner2.Parent = Toggle
+
+        break -- Stop the loop after creating the GUI
+    end
 end
-	
-
 
 		MainWindow.Visible = false
 		UIHidden = true
