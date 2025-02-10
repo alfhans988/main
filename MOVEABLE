@@ -629,7 +629,7 @@ function OrionLib:MakeWindow(WindowConfig)
     local userInputService1 = game:GetService("UserInputService")
 
 
-if userInputService1.TouchEnabled and not userInputService.KeyboardEnabled then
+if userInputService1.TouchEnabled and not userInputService1.KeyboardEnabled then
     local ScreenGui1 = Instance.new("ScreenGui")
 ScreenGui1.Name = "ScreenGui"
 ScreenGui1.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
@@ -658,7 +658,7 @@ local Corner2 = Instance.new("UICorner")
 Corner2.Name = "Corner"
 Corner2.Parent = Toggle
 
-elseif userInputService1.KeyboardEnabled and userInputService.MouseEnabled then
+elseif userInputService1.KeyboardEnabled and userInputService1.MouseEnabled then
     
 elseif userInputService1.GamepadEnabled then
     
