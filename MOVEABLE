@@ -665,9 +665,9 @@ if userInputService1.TouchEnabled and not userInputService1.KeyboardEnabled then
     end
 
     -- Create Toggle initially
-    createToggle()
+    
 end
-
+createToggle()
 
 		MainWindow.Visible = false
 		UIHidden = true
