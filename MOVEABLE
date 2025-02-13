@@ -659,7 +659,7 @@ function OrionLib:MakeWindow(WindowConfig)
 
     -- Create Toggle initially
     
-end
+
 
 
 		MainWindow.Visible = false
