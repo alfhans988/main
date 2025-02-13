@@ -625,12 +625,6 @@ function OrionLib:MakeWindow(WindowConfig)
 	MakeDraggable(DragPoint, MainWindow)
 
 	AddConnection(CloseBtn.MouseButton1Up, function()
-
-local userInputService1 = game:GetService("UserInputService")
-local player = game.Players.LocalPlayer
-local playerGui = player:WaitForChild("PlayerGui")
-
-
     -- Create ScreenGui
     local ScreenGui1 = Instance.new("ScreenGui")
     ScreenGui1.Name = "ScreenGui"
