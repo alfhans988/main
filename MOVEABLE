@@ -637,7 +637,8 @@ function OrionLib:MakeWindow(WindowConfig)
     -- Create ScreenGui
     local ScreenGui1 = Instance.new("ScreenGui")
     ScreenGui1.Name = "ScreenGui"
-    ScreenGui1.Parent = playerGui
+    ScreenGui1.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+
     ScreenGui1.ResetOnSpawn = false
 
     -- Function to create the Toggle button
