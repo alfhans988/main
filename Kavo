@@ -8,19 +8,38 @@ local run = game:GetService("RunService")
 local Utility = {}
 local Objects = {}
 function Kavo:DraggingEnabled(frame, parent)
-        
     parent = parent or frame
-    
-    -- stolen from wally or kiriot, kek
+
     local dragging = false
-    local dragInput, mousePos, framePos
+    local dragStart = nil
+    local startPos = nil
+    local currentInput
+    local dragTween = nil
+
+    local function update(input)
+        local delta = input.Position - dragStart
+        local targetPos = UDim2.new(
+            startPos.X.Scale,
+            startPos.X.Offset + delta.X,
+            startPos.Y.Scale,
+            startPos.Y.Offset + delta.Y
+        )
+
+        if dragTween then
+            dragTween:Cancel()
+        end
+
+        local tweenInfo = TweenInfo.new(0.15, Enum.EasingStyle.Sine, Enum.EasingDirection.Out)
+        dragTween = tween:Create(parent, tweenInfo, { Position = targetPos })
+        dragTween:Play()
+    end
 
     frame.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
             dragging = true
-            mousePos = input.Position
-            framePos = parent.Position
-            
+            dragStart = input.Position
+            startPos = parent.Position
+
             input.Changed:Connect(function()
                 if input.UserInputState == Enum.UserInputState.End then
                     dragging = false
@@ -30,15 +49,14 @@ function Kavo:DraggingEnabled(frame, parent)
     end)
 
     frame.InputChanged:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseMovement then
-            dragInput = input
+        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+            currentInput = input
         end
     end)
 
     input.InputChanged:Connect(function(input)
-        if input == dragInput and dragging then
-            local delta = input.Position - mousePos
-            parent.Position  = UDim2.new(framePos.X.Scale, framePos.X.Offset + delta.X, framePos.Y.Scale, framePos.Y.Offset + delta.Y)
+        if dragging and input == currentInput then
+            update(input)
         end
     end)
 end
@@ -46,7 +64,6 @@ end
 function Utility:TweenObject(obj, properties, duration, ...)
     tween:Create(obj, tweeninfo(duration, ...), properties):Play()
 end
-
 
 local themes = {
     SchemeColor = Color3.fromRGB(74, 99, 135),
