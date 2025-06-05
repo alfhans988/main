@@ -1,0 +1,251 @@
+--// SERVICES
+local HttpService = game:GetService("HttpService") -- Not used in this script but commonly for JSON encode/decode
+local StarterGui = game:GetService("StarterGui") -- Used to display notifications to the player
+local CoreGui = game:GetService("CoreGui") -- Parent of GUIs added by scripts
+
+--// CONFIGURATION TABLE (Centralized constants for easier updates)
+local CONFIG = {
+		KEY_URL = 'https://pastebin.com/raw/Lb7Abf7p',  -- URL to fetch Lua script that returns the correct key
+		KAVO_UI_URL = 'https://raw.githubusercontent.com/alfhans988/Ul-library/refs/heads/main/Kavo%20(4)', -- URL to load Kavo UI library
+		KEY_FOLDER = "123", -- Folder name to save the key
+		KEY_FILE = "123/Key.txt" -- File path where the key is stored locally (must remain .txt)
+}
+
+--// GLOBAL KEY HOLDER
+getgenv().inputKey = "" -- Stores user input key in global environment
+
+--// NOTIFICATION FUNCTION
+local function notify(title, text, duration)
+	-- Tries to show a notification to the user
+	pcall(function()
+		StarterGui:SetCore("SendNotification", {
+			Title = title,
+			Text = text,
+			Duration = duration or 3 -- Default is 3 seconds
+		})
+	end)
+end
+
+--// FETCHES THE CORRECT KEY FROM A REMOTE SCRIPT
+local function fetchKeyFromLuaScript(url)
+	local success, scriptData = pcall(function()
+		return game:HttpGet(url) -- Gets Lua code as string
+	end)
+
+	if not success then
+		notify("Error", "Failed to fetch key script.", 5)
+		error("Script fetch failed")
+	end
+
+	local keyLoader, err = loadstring(scriptData) -- Compiles the Lua string into a function
+	if not keyLoader then
+		notify("Error", "Invalid Lua script from key URL.", 5)
+		error("loadstring failed: " .. tostring(err))
+	end
+
+	local ok, loadedKey = pcall(keyLoader) -- Executes the compiled function to get the actual key
+	if not ok then
+		notify("Error", "Failed to run key script.", 5)
+		error("Script exec failed: " .. tostring(loadedKey))
+	end
+
+	return loadedKey -- Returns the key fetched from the remote script
+end
+
+-- Load the key from the online source
+local loadedKey = fetchKeyFromLuaScript(CONFIG.KEY_URL)
+
+--// CHECK IF THE GUI ALREADY EXISTS
+local function getKavoGUI()
+	local timeout = 5
+	local startTime = tick()
+
+	while not _G.ScreenGuiDetctor and tick() - startTime < timeout do
+			task.wait()
+	end
+
+	if _G.ScreenGuiDetctor then
+			return CoreGui:FindFirstChild(_G.ScreenGuiDetctor)
+	else
+			warn("getKavoGUI: Timeout waiting for _G.ScreenGuiDetctor")
+			return nil
+	end
+end
+
+
+--// MAIN SCRIPT GUI FUNCTION
+local function LoadMain()
+	-- Destroy previous GUI to avoid duplicates
+	local existingGUI = getKavoGUI()
+	if existingGUI then
+		existingGUI:Destroy()
+	end
+
+	local Players = game:GetService("Players")
+	local RunService = game:GetService("RunService")
+	local player = Players.LocalPlayer
+
+	local Library = loadstring(game:HttpGet(CONFIG.KAVO_UI_URL))() -- Load Kavo UI
+	local Window = Library.CreateLib("Main Panel", "DarkTheme") -- Create main GUI window
+	print("Found GUI:", _G.ScreenGuiDetctor)
+
+	-- Dashboard Tab
+	local Tab = Window:NewTab("Dashboard")
+	local Section = Tab:NewSection("Welcome")
+	Section:NewLabel("Access Granted - Script Loaded Successfully.")
+	Section:NewButton("Reset Saved Key", "Clears saved key file", function()
+		if isfile(CONFIG.KEY_FILE) then
+			delfile(CONFIG.KEY_FILE) -- Delete saved key file
+			notify("Key Reset", "Saved key removed!", 2)
+		end
+	end)
+
+	-- Session Timer
+	local serverJoinTime = os.time() -- Records time when script is loaded
+
+	-- Profile Tab
+	local profileTab = Window:NewTab("Profile")
+	local profileSection = profileTab:NewSection("Player Info")
+	profileSection:NewLabel("Username: " .. player.Name)
+	profileSection:NewLabel("Display Name: " .. player.DisplayName)
+	profileSection:NewLabel("User ID: " .. tostring(player.UserId))
+
+	-- Check Premium status
+	local hasPremium = player.MembershipType == Enum.MembershipType.Premium
+	profileSection:NewLabel("Premium: " .. (hasPremium and "Yes" or "No"))
+
+	-- Executor detection
+	local executor = identifyexecutor and identifyexecutor() or "Unknown"
+	profileSection:NewLabel("Executor: " .. executor)
+
+	-- Display session time
+	local sessionLabel = profileSection:NewLabel("Session Time: 00:00")
+	task.spawn(function()
+		while true do
+			task.wait(1)
+			local elapsed = os.time() - serverJoinTime
+			local minutes = math.floor(elapsed / 60)
+			local seconds = elapsed % 60
+			sessionLabel:UpdateLabel(string.format("Session Time: %02d:%02d", minutes, seconds))
+		end
+	end)
+
+	-- FPS Counter
+	local fpsLabel = profileSection:NewLabel("FPS: Calculating...")
+	task.spawn(function()
+		local lastTime = tick()
+		local frameCount = 0
+		while true do
+			RunService.RenderStepped:Wait()
+			frameCount += 1
+			local now = tick()
+			if now - lastTime >= 1 then
+				fpsLabel:UpdateLabel("FPS: " .. tostring(frameCount))
+				frameCount = 0
+				lastTime = now
+			end
+		end
+	end)
+
+	-- Ping Counter
+	local Stats = game:GetService("Stats")
+	local PingStat = Stats.Network.ServerStatsItem["Data Ping"]
+	local pingLabel = profileSection:NewLabel("Ping: Fetching...")
+
+	RunService.RenderStepped:Connect(function()
+		local ping = PingStat:GetValueString()
+		pingLabel:UpdateLabel("Ping: " .. ping)
+	end)
+end
+
+--// CREATES THE KEY UI FOR LOGIN
+local function createKeyUI()
+	-- Remove existing key GUI if any
+	local existingGUI = getKavoGUI()
+	if existingGUI then
+		existingGUI:Destroy()
+	end
+
+	local Library = loadstring(game:HttpGet(CONFIG.KAVO_UI_URL))()
+	local Window = Library.CreateLib("Key System", "DarkTheme")
+	local Tab = Window:NewTab("Key Login")
+	local Section = Tab:NewSection("Enter Access Key")
+
+	Section:NewLabel("Enter your key to unlock script access.")
+	Section:NewButton("Copy Key Site", "Copies the key URL to clipboard", function()
+		pcall(setclipboard, CONFIG.KEY_URL)
+		notify("Copied", "Key website copied to clipboard!", 3)
+	end)
+
+	-- Key Input
+	Section:NewTextBox("Key Input", "Paste your key here", function(text)
+		getgenv().inputKey = text -- Save the typed key globally
+	end)
+
+	print("Found GUI:", _G.ScreenGuiDetctor)
+
+	local statusLabel = Section:NewLabel("Status: Waiting for input...") -- Shows validation status
+	local submitted = false -- Locks submission after first attempt
+
+	-- Submit Key Logic
+	Section:NewButton("Submit Key", "Validates the key", function()
+		if submitted then return end
+		if getgenv().inputKey == "" then
+			notify("Key System", "Key cannot be empty!", 3)
+			statusLabel:UpdateLabel("Status: Key cannot be empty!")
+			return
+		end
+
+		if getgenv().inputKey == loadedKey then -- Valid key
+			submitted = true
+			local success, err = pcall(function()
+				writefile(CONFIG.KEY_FILE, loadedKey) -- Save key to local file
+			end)
+
+			if success then
+				statusLabel:UpdateLabel("Status: Key accepted.")
+				notify("Key System", "Key accepted!", 3)
+				task.wait(1)
+
+				local gui = getKavoGUI()
+				if gui then gui:Destroy() end -- Clean up key UI
+				LoadMain() -- Proceed to main script
+			else
+				warn("Failed to save key: " .. err)
+			end
+		else
+			statusLabel:UpdateLabel("Status: Invalid key!")
+			notify("Key System", "Invalid key. Try again.", 3)
+		end
+	end)
+
+	-- Credits
+	Section:NewLabel("Script made by: yourname.dev")
+end
+
+--// ATTEMPTS TO READ A SAVED KEY FROM FILE
+local function readKey()
+	if isfile(CONFIG.KEY_FILE) then
+		local ok, savedKey = pcall(readfile, CONFIG.KEY_FILE)
+		if ok and savedKey == loadedKey then
+			notify("Key System", "Auto-authenticated with saved key!", 3)
+			LoadMain() -- If key is valid, skip UI
+			return true
+		elseif not ok then
+			warn("Failed to read key file. It may be corrupted.")
+		end
+	end
+	return false -- Key not found or invalid
+end
+
+--// FILESYSTEM SETUP
+pcall(function()
+	if not isfolder(CONFIG.KEY_FOLDER) then
+		makefolder(CONFIG.KEY_FOLDER) -- Ensure folder for key exists
+	end
+end)
+
+--// LAUNCH LOGIC
+if not readKey() then
+	createKeyUI() -- If no saved key or invalid, ask for input
+end
