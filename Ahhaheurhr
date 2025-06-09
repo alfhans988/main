@@ -1,0 +1,1807 @@
+local rolibwaita = loadstring(game:HttpGet("https://raw.githubusercontent.com/alfhans988/GamerAbhiyanFix/refs/heads/main/Rolibwaita%20Mobile"))()
+
+local savedSettings = {
+    WalkSpeed = 16,
+    JumpPower = 50,
+    FieldOfView = 70,
+    Enabled = true -- Default aktif
+}
+
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local Workspace = game:GetService("Workspace")
+
+local Window = rolibwaita:NewWindow({
+    Name = "Universal ExplanHUB | 1 Elite", -- Name of window | string, required
+    Keybind = "RightShift", -- Keybind to open and close this window | string, required
+    UseCoreGui = true, -- Whether to use coregui / gethui as the gui parent | bool, optional
+    PrintCredits = true -- Whether to print ui library credits and info in the console | bool, optional
+})
+
+local Tab: one = Window:NewTab({
+    Name = "Recommendation", -- Name of the tab | string, required
+    Icon = "rbxassetid://1234" -- Icon for the tab button | string, optional
+})
+
+local Section: one = Tab:NewSection({
+    Name = "Visual", -- Name of the section | string, required
+    Description = "Script That Work Only In UI", -- Description of the section | string, optional 
+})
+
+local Button: one = Section:NewButton({
+    Name = "Rejoin Disconnected", -- Name of the button | string, required
+    Description = "Rejoin Button In Disconnected UI",  -- Description of the button | string, optional 
+    Callback = function(value) -- code executed on interaction with the element | function,  optional
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/rouxhaver/scripts-2/main/rejoin%20button%20for%20kick%20message.lua"))()
+    end,
+})
+
+local Toggle: one = Section:NewToggle({
+    Name = "X-Ray Vision", 
+    Description = "See through walls and objects", 
+    CurrentState = false, 
+    Callback = function(value)
+        local player = game.Players.LocalPlayer
+
+        -- Tunggu karakter jika belum ada
+        local character = player.Character or player.CharacterAdded:Wait()
+
+        -- Fungsi untuk mengatur X-ray pada part tertentu
+        local function setPartXRay(part, enabled)
+            if part:IsA("BasePart") and part.CanCollide and part.Transparency < 1 then
+                -- Pastikan part bukan bagian dari karakter pemain
+                if not part:IsDescendantOf(character) then
+                    part.LocalTransparencyModifier = enabled and 0.7 or 0
+                end
+            end
+        end
+
+        -- Fungsi utama untuk mengatur X-ray
+        local function setXRay(enabled)
+            for _, part in ipairs(workspace:GetDescendants()) do
+                setPartXRay(part, enabled)
+            end
+        end
+
+        -- Bersihkan koneksi sebelumnya jika ada
+        if xRayConnection then
+            xRayConnection:Disconnect()
+            xRayConnection = nil
+        end
+
+        -- Terapkan X-ray sesuai toggle state
+        setXRay(value)
+
+        -- Jika diaktifkan, sambungkan event untuk objek baru
+        if value then
+            xRayConnection = workspace.DescendantAdded:Connect(function(part)
+                setPartXRay(part, true)
+            end)
+        end
+    end,
+})
+
+local Section: one = Tab:NewSection({
+    Name = "Button Toggle", -- Name of the section | string, required
+    Description = "GUI Button Can Appiers And Dissapier UI Library", -- Description of the section | string, optional 
+})
+
+local Button: one = Section:NewButton({
+    Name = "Show Toggle Button", -- Name of the button | string, required
+    Description = "This Button Can Show And Hide UI Library",  -- Description of the button | string, optional 
+    Callback = function(value) -- code executed on interaction with the element | function,  optional
+        loadstring(game:HttpGet("https://pastebin.com/raw/4YnZ1JPD"))()
+    end,
+})
+
+local Tab: two = Window:NewTab({
+    Name = "ESP Player | CHAM", -- Name of the tab | string, required
+    Icon = "rbxassetid://1234" -- Icon for the tab button | string, optional
+})
+
+local Section: two = Tab:NewSection({
+    Name = "Reset / Default", -- Name of the section | string, required
+    Description = "Highlight Players", -- Description of the section | string, optional 
+})
+
+local espSettings = {
+    Enabled = false,
+    FillColor = Color3.new(1, 0, 0),
+    OutlineColor = Color3.new(1, 1, 1),
+    FillTransparency = 0.5,
+    OutlineTransparency = 0,
+    UpdateDelay = 0.1 -- Delay to reduce load
+}
+
+-- Optimized ESP function
+local function UpdateESP()
+    if not espSettings.Enabled then return end
+    
+    for _, player in pairs(game.Players:GetPlayers()) do
+        if player ~= game.Players.LocalPlayer and player.Character then
+            local humanoid = player.Character:FindFirstChildOfClass("Humanoid")
+            if humanoid and humanoid.Health > 0 then -- Cek karakter valid
+                local highlight = player.Character:FindFirstChild("ESP_Highlight") or Instance.new("Highlight")
+                highlight.Name = "ESP_Highlight"
+                highlight.FillColor = espSettings.FillColor
+                highlight.OutlineColor = espSettings.OutlineColor
+                highlight.FillTransparency = espSettings.FillTransparency
+                highlight.OutlineTransparency = espSettings.OutlineTransparency
+                
+                -- Critical fix: Turn off unnecessary effects
+                highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+                highlight.Adornee = player.Character
+                highlight.Parent = player.Character
+            elseif player.Character:FindFirstChild("ESP_Highlight") then
+                player.Character.ESP_Highlight:Destroy()
+            end
+        end
+    end
+end
+
+-- Use debounce for updates
+local espDebounce = false
+local function SafeUpdateESP()
+    if not espDebounce then
+        espDebounce = true
+        pcall(UpdateESP) -- Use pcall for error handling
+        task.wait(espSettings.UpdateDelay)
+        espDebounce = false
+    end
+end
+
+local Button: two = Section:NewButton({
+    Name = "Reset To Default Settings", -- Name of the button | string, required
+    Description = "Reset Settings To Default Settings",  -- Description of the button | string, optional 
+    Callback = function() -- code executed on interaction with the element | function,  optional
+        espSettings = {
+            Enabled = espSettings.Enabled, -- Maintain current toggle state
+            FillColor = Color3.new(1,0,0),
+            OutlineColor = Color3.new(1,1,1),
+            FillTransparency = 0.5,
+            OutlineTransparency = 0
+        }
+        UpdateAllESP()
+    end,
+})
+
+local Button: two = Section:NewButton({
+    Name = "Refresh ESP [For New Player]", -- Name of the button | string, required
+    Description = "Example Description",  -- Description of the button | string, optional 
+    Callback = function() -- code executed on interaction with the element | function,  optional
+        UpdateAllESP()
+    end,
+})
+
+local Section: two = Tab:NewSection({
+    Name = "Activate ESP", -- Name of the section | string, required
+    Description = "Description Example", -- Description of the section | string, optional 
+})
+
+local Toggle: two = Section:NewToggle({
+    Name = "[CHAM] Player ESP",
+    Description = "Toggle Player Highlights (Optimized)",
+    CurrentState = false,
+    Callback = function(state)
+        espSettings.Enabled = state
+        if state then
+            SafeUpdateESP()
+        else
+            -- Bersihkan semua ESP saat dimatikan
+            for _, player in pairs(game.Players:GetPlayers()) do
+                if player.Character and player.Character:FindFirstChild("ESP_Highlight") then
+                    player.Character.ESP_Highlight:Destroy()
+                end
+            end
+        end
+    end
+})
+
+local colorMaps = {
+    FillLight = {
+        Red = Color3.new(1, 0, 0),
+        Orange = Color3.new(1, 0.647, 0),
+        Yellow = Color3.new(1, 1, 0),
+        Green = Color3.new(0, 1, 0),
+        Cyan = Color3.new(0, 1, 1),
+        Blue = Color3.new(0, 0, 1),
+        Pink = Color3.new(1, 0, 1),
+        Purple = Color3.new(0.6, 0.4, 0.8),
+        Black = Color3.new(0, 0, 0),
+        Gray = Color3.new(0.5, 0.5, 0.5),
+        White = Color3.new(1, 1, 1),
+    },
+    FillDark = {
+        ["Dark Red"] = Color3.new(0.5, 0, 0),
+        ["Dark Orange"] = Color3.new(0.5, 0.25, 0),
+        ["Dark Yellow"] = Color3.new(0.5, 0.5, 0),
+        ["Dark Green"] = Color3.new(0, 0.5, 0),
+        ["Dark Cyan"] = Color3.new(0, 0.5, 0.5),
+        ["Dark Blue"] = Color3.new(0, 0, 0.5),
+        ["Dark Pink"] = Color3.new(0.5, 0, 0.5),
+        ["Dark Purple"] = Color3.new(0.25, 0, 0.25),
+        ["Dark Black"] = Color3.new(0, 0, 0),
+        ["Dark Gray"] = Color3.new(0.25, 0.25, 0.25),
+        ["Dark White"] = Color3.new(0.8, 0.8, 0.8)
+    },
+    OutlineLight = {
+        Red = Color3.new(1, 0, 0),
+        Orange = Color3.new(1, 0.5, 0),
+        Yellow = Color3.new(1, 1, 0),
+        Green = Color3.new(0, 1, 0),
+        Cyan = Color3.new(0, 1, 1),
+        Blue = Color3.new(0, 0, 1),
+        Pink = Color3.new(1, 0, 1),
+        Purple = Color3.new(0.5, 0, 0.5),
+        Black = Color3.new(0, 0, 0),
+        Gray = Color3.new(0.5, 0.5, 0.5),
+        White = Color3.new(1, 1, 1)
+    },
+    OutlineDark = {
+        ["Dark Red"] = Color3.new(0.5, 0, 0),
+        ["Dark Orange"] = Color3.new(0.5, 0.25, 0),
+        ["Dark Yellow"] = Color3.new(0.5, 0.5, 0),
+        ["Dark Green"] = Color3.new(0, 0.5, 0),
+        ["Dark Cyan"] = Color3.new(0, 0.5, 0.5),
+        ["Dark Blue"] = Color3.new(0, 0, 0.5),
+        ["Dark Pink"] = Color3.new(0.5, 0, 0.5),
+        ["Dark Purple"] = Color3.new(0.25, 0, 0.25),
+        ["Dark Black"] = Color3.new(0, 0, 0),
+        ["Dark Gray"] = Color3.new(0.25, 0.25, 0.25),
+        ["Dark White"] = Color3.new(0.8, 0.8, 0.8)
+    }
+}
+
+local Dropdown: two = Section:NewDropdown({
+    Name = "Set ESP Fill Color [Light]",
+    Description = "Set Light Color",
+    Choices = {"Red", "Orange", "Yellow", "Green", "Cyan", "Blue", "Pink", "Purple", "Black", "Gray", "White"},
+    CurrentState = "Red",
+    Callback = function(choice)
+        espSettings.FillColor = colorMaps.FillLight[choice] -- Note this uses FillColor
+        UpdateAllESP() -- Make sure to use UpdateAllESP not updateESP
+    end,
+})
+
+local Dropdown: two = Section:NewDropdown({
+    Name = "Set ESP Fill Color [Dark]",
+    Description = "Set Dark Color", 
+    Choices = {"Dark Red", "Dark Orange", "Dark Yellow", "Dark Green", "Dark Cyan", "Dark Blue", "Dark Pink", "Dark Purple", "Dark Black", "Dark Gray", "Dark White"},
+    CurrentState = "Dark Red",
+    Callback = function(choice)
+        espSettings.FillColor = colorMaps.FillDark[choice] -- Perhatikan ini menggunakan FillColor
+        UpdateAllESP()
+    end,
+})
+
+local Dropdown: two = Section:NewDropdown({
+    Name = "Set ESP Outline Color [Light]",
+    Description = "Set Light Color",
+    Choices = {"Red", "Orange", "Yellow", "Green", "Cyan", "Blue", "Pink", "Purple", "Black", "Gray", "White"}, -- Hanya warna yang tersedia
+    CurrentState = "White",
+    Callback = function(choice)
+        espSettings.OutlineColor = colorMaps.OutlineLight[choice]
+        UpdateAllESP()
+    end,
+})
+
+local Dropdown: two = Section:NewDropdown({
+    Name = "Set ESP Outline Color [Dark]",
+    Description = "Dark outlines for bright environments",
+    Choices = {
+        "Dark Black", "Dark Red", "Dark Blue", "Dark Green", 
+        "Dark Purple", "Dark Gray", "Dark White", "Dark Cyan",
+        "Dark Pink", "Dark Orange", "Dark Yellow"
+    },
+    CurrentState = "Dark Black",
+    Callback = function(choice)
+        espSettings.OutlineColor = colorMaps.OutlineDark[choice]
+        
+        -- Auto-adjust settings based on color
+        if choice == "Dark Black" then
+            espSettings.OutlineTransparency = 0.1
+            espSettings.OutlineThickness = 2  -- Lebih tebal untuk hitam
+        elseif choice == "Dark White" then
+            espSettings.OutlineTransparency = 0.3
+        else
+            espSettings.OutlineTransparency = 0
+        end
+        
+        UpdateAllESP()
+        
+        -- Beri notifikasi warna kurang visible
+        if choice == "Dark Green" or choice == "Dark Blue" then
+            game:GetService("StarterGui"):SetCore("SendNotification", {
+                Title = "Color Tip",
+                Text = "Use thicker outline for "..choice,
+                Duration = 3
+            })
+        end
+    end
+})
+
+local Slider: two = Section:NewSlider({
+    Name = "Set Fill Transparency", -- Name of the dropdown | string, required
+    Description = "Default Is 0,5",  -- Description of the dropdown | string, optional 
+    MinMax = {"0", "1"}, -- the minimum and maximum states of the slider | table, required
+    Increment = 0.1, -- the increment the slider increases by | number required
+    CurrentValue = 0.5, -- default value | number, required
+    Callback = function(value) -- code executed on interaction with the element | function,  optional
+        espSettings.Transparency = value
+        updateESP()
+    end,
+})
+
+local Slider: two = Section:NewSlider({
+    Name = "Set Outline Transparency", -- Name of the dropdown | string, required
+    Description = "Default Is 0,5",  -- Description of the dropdown | string, optional 
+    MinMax = {"0", "1"}, -- the minimum and maximum states of the slider | table, required
+    Increment = 0.1, -- the increment the slider increases by | number required
+    CurrentValue = 0.5, -- default value | number, required
+    Callback = function(value) -- code executed on interaction with the element | function,  optional
+        espSettings.OutlineTransparency = value
+        UpdateAllESP()
+    end,
+})
+
+local function CharacterAdded(player, character)
+    if espSettings.Enabled then
+        character:WaitForChild("Humanoid")
+        task.wait(0.5) -- Jeda untuk memastikan karakter fully loaded
+        SafeUpdateESP()
+    end
+end
+
+-- Use a more efficient connection
+local connections = {}
+table.insert(connections, game.Players.PlayerAdded:Connect(function(player)
+    table.insert(connections, player.CharacterAdded:Connect(function(character)
+        CharacterAdded(player, character)
+    end))
+end))
+
+-- Inisialisasi untuk pemain yang sudah ada
+for _, player in pairs(game.Players:GetPlayers()) do
+    if player.Character then
+        CharacterAdded(player, player.Character)
+    end
+    table.insert(connections, player.CharacterAdded:Connect(function(character)
+        CharacterAdded(player, character)
+    end))
+end
+
+-- Cleanup saat script dimatikan
+local function CleanupESP()
+    for _, conn in ipairs(connections) do
+        conn:Disconnect()
+    end
+    for _, player in pairs(game.Players:GetPlayers()) do
+        if player.Character and player.Character:FindFirstChild("ESP_Highlight") then
+            player.Character.ESP_Highlight:Destroy()
+        end
+    end
+end
+
+game:GetService("StarterGui").ResetPlayerGuiOnSpawn = false
+
+local Tab: three = Window:NewTab({
+    Name = "Area", -- Name of the tab | string, required
+    Icon = "rbxassetid://1234" -- Icon for the tab button | string, optional
+})
+
+local Section: three = Tab:NewSection({
+    Name = "Day/Night Cycle | COMING SOON", 
+    Description = "Control time of day and sky appearance", 
+})
+
+-- Dropdown Element
+local Dropdown: three = Section:NewDropdown({
+    Name = "Time Of Day | COMING SOON", 
+    Description = "Change the sky and lighting", 
+    Choices = {"Day", "Night", "Sunset", "Midnight"},
+    CurrentState = "Day",
+    Callback = function(value)
+        print("coming soon")
+    end,
+})
+
+-- Toggle Element
+local Toggle: three = Section:NewToggle({
+    Name = "Auto Day/Night Cycle | COMING SOON",
+    Description = "Automatically cycle between day and night", 
+    CurrentState = false,
+    Callback = function(value)
+        print("coming soon")
+    end,
+})
+
+-- Slider Elements
+local Slider: three = Section:NewSlider({
+    Name = "Day Duration (seconds) | COMING SOON", -- Name of the dropdown | string, required
+    Description = "Set duration for daytime",  -- Description of the dropdown | string, optional 
+    MinMax = {"30", "300"}, -- the minimum and maximum states of the slider | table, required
+    Increment = 10, -- the increment the slider increases by | number required
+    CurrentValue = 20, -- default value | number, required
+    Callback = function(value) -- code executed on interaction with the element | function,  optional
+        print("value")
+    end,
+})
+
+local Slider: three = Section:NewSlider({
+    Name = "Night Duration (seconds) | COMING SOON", -- Name of the dropdown | string, required
+    Description = "Set duration for nighttime",  -- Description of the dropdown | string, optional 
+    MinMax = {"30", "300"}, -- the minimum and maximum states of the slider | table, required
+    Increment = 10, -- the increment the slider increases by | number required
+    CurrentValue = 20, -- default value | number, required
+    Callback = function(value) -- code executed on interaction with the element | function,  optional
+        print("coming soon")
+    end,
+})
+
+local Slider: three = Section:NewSlider({
+    Name = "Transition Speed (seconds) | COMING SOON", -- Name of the dropdown | string, required
+    Description = "Set speed for time transitions",  -- Description of the dropdown | string, optional 
+    MinMax = {"1", "10"}, -- the minimum and maximum states of the slider | table, required
+    Increment = 1, -- the increment the slider increases by | number required
+    CurrentValue = 10, -- default value | number, required
+    Callback = function(value) -- code executed on interaction with the element | function,  optional
+        print("coming soon")
+    end,
+})
+
+local Section: three = Tab:NewSection({
+    Name = "Aimbot | COMING SOON", -- Name of the section | string, required
+    Description = "Automatically Redirect To Player", -- Description of the section | string, optional 
+})
+
+local Dropdown: three = Section:NewDropdown({
+    Name = "Select Player | COMING SOON",
+    Description = "Choose which player to target",
+    Choices = {},
+    CurrentState = "None",
+    Callback = function(value)
+        print("coming soon")
+    end
+})
+
+local Toggle: three = Section:NewToggle({
+    Name = "Start Aim (On/Off) | COMING SOON",
+    Description = "Enable/Disable auto aim",
+    CurrentState = false,
+    Callback = function(value)
+        print("coming soon")
+    end
+})
+
+local Section: three = Tab:NewSection({
+    Name = "Noclip", -- Name of the section | string, required
+    Description = "Players Will Be Able to Penetrate Walls", -- Description of the section | string, optional 
+})
+
+local Plr = game.Players.LocalPlayer
+local Clipon = false
+local SteppedConnection
+
+local Toggle: three = Section:NewToggle({
+    Name = "NoClip (Walk Through Walls)",
+    Description = "Toggle to enable/disable wall penetration",
+    CurrentState = false,
+    Callback = function(state)
+        Clipon = state
+
+        if Clipon then
+            SteppedConnection = game:GetService("RunService").Stepped:Connect(function()
+                if Plr.Character and Plr.Character:FindFirstChild("Humanoid") then
+                    for _, part in pairs(Plr.Character:GetDescendants()) do
+                        if part:IsA("BasePart") then
+                            part.CanCollide = false
+                        end
+                    end
+                end
+            end)
+        else
+            if SteppedConnection then
+                SteppedConnection:Disconnect()
+                SteppedConnection = nil
+            end
+
+            -- Optional: Aktifkan kembali CanCollide saat dinonaktifkan
+            if Plr.Character then
+                for _, part in pairs(Plr.Character:GetDescendants()) do
+                    if part:IsA("BasePart") then
+                        part.CanCollide = true
+                    end
+                end
+            end
+        end
+    end
+})
+
+local Section: three = Tab:NewSection({
+    Name = "Flashlight", -- Name of the section | string, required
+    Description = "Describes the Area Around the Player", -- Description of the section | string, optional 
+})
+
+local Button: three = Section:NewButton({
+    Name = "Flashlight", -- Name of the button | string, required
+    Description = "With Button",  -- Description of the button | string, optional 
+    Callback = function(value) -- code executed on interaction with the element | function,  optional
+        loadstring(game:HttpGet("https://pastebin.com/raw/4v4nPfU7"))() -- Flashlight
+    end,
+})
+
+local Toggle: three = Section:NewToggle({
+    Name = "Flashlight (On/Off) | COMING SOON",
+    Description = "Toggle to turn flashlight on/off",
+    CurrentState = false,
+    Callback = function(state)
+        print("coming soon")
+    end
+})
+
+local Slider: three = Section:NewSlider({
+    Name = "Flashlight Area Brightness | COMING SOON", -- Name of the dropdown | string, required
+    Description = "Adjust flashlight brightness",  -- Description of the dropdown | string, optional 
+    MinMax = {"1", "10"}, -- the minimum and maximum states of the slider | table, required
+    Increment = 1, -- the increment the slider increases by | number required
+    CurrentValue = 5, -- default value | number, required
+    Callback = function(value) -- code executed on interaction with the element | function,  optional
+        print("coming soon")
+    end,
+})
+
+local Tab: four = Window:NewTab({
+    Name = "Information", -- Name of the tab | string, required
+    Icon = "rbxassetid://1234" -- Icon for the tab button | string, optional
+})
+
+local gameName = game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId).Name
+local player = game:GetService("Players").LocalPlayer
+local username = player.Name
+local nickname = player.DisplayName
+local userID = tostring(player.UserId)
+
+local Section: four = Tab:NewSection({
+    Name = "Information You Will Need Under Certain Conditions", -- Name of the section | string, required
+    Description = "There is a Username, Nickname, User ID, and Game Name", -- Description of the section | string, optional 
+})
+
+local Button: four = Section:NewButton({
+    Name = "Game Name = " .. gameName, -- Name of the button | string, required
+    Description = "Click to copy game name",  -- Description of the button | string, optional 
+    Callback = function()
+        setclipboard(gameName)
+    end,
+})
+
+local Button: four = Section:NewButton({
+    Name = "Your Username = " .. username, -- Name of the button | string, required
+    Description = "Click to copy username",  -- Description of the button | string, optional 
+    Callback = function()
+        setclipboard(username)
+    end,
+})
+
+local Button: four = Section:NewButton({
+    Name = "Your Nickname = " .. nickname, -- Name of the button | string, required
+    Description = "Click to copy nickname",  -- Description of the button | string, optional 
+    Callback = function()
+        setclipboard(nickname)
+    end,
+})
+
+local Button: four = Section:NewButton({
+    Name = "Your UserID = " .. userID, -- Name of the button | string, required
+    Description = "Click to copy UserID",  -- Description of the button | string, optional 
+    Callback = function()
+        setclipboard(userID)
+    end,
+})
+
+local Tab: five = Window:NewTab({
+    Name = "Character Settings", -- Name of the tab | string, required
+    Icon = "rbxassetid://1234" -- Icon for the tab button | string, optional
+})
+
+local Section: five = Tab:NewSection({
+    Name = "Persistence Settings", -- Name of the section | string, required
+    Description = "Save character configurations", -- Description of the section | string, optional 
+})
+
+local Toggle: five = Section:NewToggle({
+    Name = "Save Character Settings",
+    Description = "Preserve settings after death",
+    CurrentState = savedSettings.Enabled,
+    Callback = function(value)
+        savedSettings.Enabled = value
+    end,
+})
+
+-- Function to apply saved settings
+local function applySavedSettings(character)
+    if not savedSettings.Enabled then return end
+    
+    local humanoid = character:WaitForChild("Humanoid")
+    humanoid.WalkSpeed = savedSettings.WalkSpeed
+    humanoid.JumpPower = savedSettings.JumpPower
+    Workspace.CurrentCamera.FieldOfView = savedSettings.FieldOfView
+end
+
+-- Apply settings when character appears
+LocalPlayer.CharacterAdded:Connect(applySavedSettings)
+if LocalPlayer.Character then
+    applySavedSettings(LocalPlayer.Character)
+end
+
+local Section: five = Tab:NewSection({
+    Name = "WalkSpeed Control", -- Name of the section | string, required
+    Description = "Adjust movement speed", -- Description of the section | string, optional 
+})
+
+local Button: five = Section:NewButton({
+    Name = "Heal Character", 
+    Description = "Restores 50 health points", 
+    Callback = function()
+        -- Inisialisasi variabel
+        local healAmount = 50
+        local cooldown = 5 -- dalam detik
+        local player = game.Players.LocalPlayer
+        
+        -- Cek apakah karakter sudah dimuat
+        if not player.Character then
+            warn("Character not loaded yet!")
+            return
+        end
+        
+        local humanoid = player.Character:FindFirstChild("Humanoid")
+        if not humanoid then
+            warn("Humanoid not found!")
+            return
+        end
+        
+        -- Cek apakah karakter sudah penuh health
+        if humanoid.Health >= humanoid.MaxHealth then
+            game:GetService("StarterGui"):SetCore("SendNotification", {
+                Title = "Heal Failed",
+                Text = "Health is already full!",
+                Duration = 3
+            })
+            return
+        end
+        
+        -- Eksekusi penyembuhan
+        humanoid.Health = math.min(humanoid.Health + healAmount, humanoid.MaxHealth)
+        
+        -- Notifikasi
+        game:GetService("StarterGui"):SetCore("SendNotification", {
+            Title = "HEALED!",
+            Text = "+"..healAmount.." HP (Now: "..humanoid.Health.."/"..humanoid.MaxHealth..")",
+            Duration = 3,
+            Icon = "rbxassetid://9921392666" -- optional (ganti dengan asset ID Anda)
+        })
+        
+        -- Cooldown system
+        Button:SetAttribute("Disabled", true)
+        Button:SetAttribute("Description", "Cooldown: "..cooldown.."s")
+        
+        for i = cooldown, 1, -1 do
+            task.wait(1)
+            Button:SetAttribute("Description", "Cooldown: "..i.."s")
+        end
+        
+        Button:SetAttribute("Description", "Restores 50 health points")
+        Button:SetAttribute("Disabled", false)
+    end
+})
+
+local Section: five = Tab:NewSection({
+    Name = "WalkSpeed Control", -- Name of the section | string, required
+    Description = "Adjust movement speed", -- Description of the section | string, optional 
+})
+
+local Button: five = Section:NewButton({
+    Name = "Set Walkspeed To 50",
+    Description = "Boost Your Speed",
+    Callback = function()
+        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+            LocalPlayer.Character.Humanoid.WalkSpeed = 50
+            savedSettings.WalkSpeed = 50
+        end
+    end,
+})
+
+
+local TextBox: five = Section:NewTextBox({
+    Name = "Costum Walkspeed",
+    PlaceholderText = "Input here..",
+    Text = "16 Is Default, Click To Set",
+    Trigger = "FocusLost",
+    Callback = function(value)
+        local numValue = tonumber(value)
+        if numValue and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+            LocalPlayer.Character.Humanoid.WalkSpeed = numValue
+            savedSettings.WalkSpeed = numValue
+        end
+    end,
+})
+
+local Slider: five = Section:NewSlider({
+    Name = "Slide To Set Walkspeed", -- Name of the dropdown | string, required
+    Description = "It's easier to input walkspeed by simply sliding",  -- Description of the dropdown | string, optional 
+    MinMax = {"5", "120"}, -- the minimum and maximum states of the slider | table, required
+    Increment = 1, -- the increment the slider increases by | number required
+    CurrentValue = savedSettings.WalkSpeed, -- default value | number, required
+    Callback = function(value) -- code executed on interaction with the element | function,  optional
+        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+            LocalPlayer.Character.Humanoid.WalkSpeed = value
+            savedSettings.WalkSpeed = value
+        end
+    end,
+})
+
+local Section: five = Tab:NewSection({
+    Name = "JumpPower Control", -- Name of the section | string, required
+    Description = "Adjust jump height", -- Description of the section | string, optional 
+})
+
+local Button: five = Section:NewButton({
+    Name = "Set JumpPower To 70",
+    Description = "Increase jump height",
+    Callback = function()
+        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+            LocalPlayer.Character.Humanoid.JumpPower = 70
+            savedSettings.JumpPower = 70
+        end
+    end,
+})
+
+local TextBox: five = Section:NewTextBox({
+    Name = "Costum JumpPower",
+    PlaceholderText = "Input here..",
+    Text = "50 Is Default, Click To Set",
+    Trigger = "FocusLost",
+    Callback = function(value)
+        local numValue = tonumber(value)
+        if numValue and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+            LocalPlayer.Character.Humanoid.JumpPower = numValue
+            savedSettings.JumpPower = numValue
+        end
+    end,
+})
+
+local Slider: five = Section:NewSlider({
+    Name = "Slide To Set JumpPower", -- Name of the dropdown | string, required
+    Description = "Adjust jump height with slider",  -- Description of the dropdown | string, optional 
+    MinMax = {"10", "154"}, -- the minimum and maximum states of the slider | table, required
+    Increment = 1, -- the increment the slider increases by | number required
+    CurrentValue = savedSettings.JumpPower, -- default value | number, required
+    Callback = function(value) -- code executed on interaction with the element | function,  optional
+        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+            LocalPlayer.Character.Humanoid.JumpPower = value
+            savedSettings.JumpPower = value
+        end
+    end,
+})
+
+local Section: five = Tab:NewSection({
+    Name = "Field Of View Control", -- Name of the section | string, required
+    Description = "Adjust camera FOV", -- Description of the section | string, optional 
+})
+
+local Button: five = Section:NewButton({
+    Name = "Set Field Of View To 90",
+    Description = "Widen your view",
+    Callback = function()
+        Workspace.CurrentCamera.FieldOfView = 90
+        savedSettings.FieldOfView = 90
+    end,
+}) -- Half TeraByte
+
+local TextBox: five = Section:NewTextBox({
+    Name = "Costum Field Of View",
+    PlaceholderText = "Input here..",
+    Text = "70 Is Default, Click To Set",
+    Trigger = "FocusLost",
+    Callback = function(value)
+        local numValue = tonumber(value)
+        if numValue then
+            Workspace.CurrentCamera.FieldOfView = numValue
+            savedSettings.FieldOfView = numValue
+        end
+    end,
+})
+
+local Slider: five = Section:NewSlider({
+    Name = "Slide To Set Field Of View", -- Name of the dropdown | string, required
+    Description = "Adjust FOV with slider",  -- Description of the dropdown | string, optional 
+    MinMax = {"15", "174"}, -- the minimum and maximum states of the slider | table, required
+    Increment = 1, -- the increment the slider increases by | number required
+    CurrentValue = savedSettings.FieldOfView, -- default value | number, required
+    Callback = function(value) -- code executed on interaction with the element | function,  optional
+        Workspace.CurrentCamera.FieldOfView = value
+        savedSettings.FieldOfView = value
+    end,
+})
+
+local Tab: six = Window:NewTab({
+    Name = "Reset Character Settings", -- Name of the tab | string, required
+    Icon = "rbxassetid://1234" -- Icon for the tab button | string, optional
+})
+
+local Section: six = Tab:NewSection({
+    Name = "Back To Roblox Default Settings", -- Name of the section | string, required
+    Description = "16 For Walkspeed, 50 For JumpPower, 70 For Field Of View", -- Description of the section | string, optional 
+})
+
+local Button: six = Section:NewButton({
+    Name = "Reset Walkspeed", -- Name of the button | string, required
+    Description = "Set To 16",  -- Description of the button | string, optional 
+    Callback = function(value) -- code executed on interaction with the element | function,  optional
+        game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = 16
+    end,
+})
+
+local Button: six = Section:NewButton({
+    Name = "Reset JumpPower", -- Name of the button | string, required
+    Description = "Set To 50",  -- Description of the button | string, optional 
+    Callback = function(value) -- code executed on interaction with the element | function,  optional
+        game.Players.LocalPlayer.Character.Humanoid.JumpPower = 50
+    end,
+})
+
+local Button: six = Section:NewButton({
+    Name = "Reset Field Of View", -- Name of the button | string, required
+    Description = "Set To 70",  -- Description of the button | string, optional 
+    Callback = function(value) -- code executed on interaction with the element | function,  optional
+        Workspace.CurrentCamera.FieldOfView = 70
+    end,
+})
+
+local Tab: seven = Window:NewTab({
+    Name = "Additional Scripts", -- Name of the tab | string, required
+    Icon = "rbxassetid://1234" -- Icon for the tab button | string, optional
+})
+
+local Section: seven = Tab:NewSection({
+    Name = "All Game Scripts Into one UI", -- Name of the section | string, required
+    Description = "There Are Many Scripts For Several Games Here", -- Description of the section | string, optional 
+})
+
+local Button: seven = Section:NewButton({
+    Name = "GamesHUB V6.1", -- Name of the button | string, required
+    Description = "Latest GamesHUB Scripts",  -- Description of the button | string, optional 
+    Callback = function(value) -- code executed on interaction with the element | function,  optional
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/TakeModzz/Games-Hub-Script/main/Games%20Hub%20(Always%20updated)"))()
+    end,
+})
+
+local Button: seven = Section:NewButton({
+    Name = "GamesHUB V5", -- Name of the button | string, required
+    Description = "Downgrade Version From GamesHUB",  -- Description of the button | string, optional 
+    Callback = function(value) -- code executed on interaction with the element | function,  optional
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/TakeModzz/Games-Hub-V5-Selector-Fixed/main/Games"))()
+    end,
+})
+
+local Button: seven = Section:NewButton({
+    Name = "B Genesis V1.2", -- Name of the button | string, required
+    Description = "Example Description",  -- Description of the button | string, optional 
+    Callback = function(value) -- code executed on interaction with the element | function,  optional
+        loadstring(game:HttpGet('https://raw.githubusercontent.com/raw-scriptpastebin/raw/main/B_Genesis'))()
+    end,
+})
+
+local Button: seven = Section:NewButton({
+    Name = "Srxge HUB", -- Name of the button | string, required
+    Description = "Example Description",  -- Description of the button | string, optional 
+    Callback = function(value) -- code executed on interaction with the element | function,  optional
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/sxrge3k/sxrge_ssh_hub/main/sxrge_script_hub"))()
+    end,
+})
+
+local Button: seven = Section:NewButton({
+    Name = "V HUB V2", -- Name of the button | string, required
+    Description = "Latest Version Of V HUB",  -- Description of the button | string, optional 
+    Callback = function(value) -- code executed on interaction with the element | function,  optional
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/rblxscriptsnet/rblxhub/main/rblxhub.lua"))()
+    end,
+})
+
+local Button: seven = Section:NewButton({
+    Name = "V HUB V1", -- Name of the button | string, required
+    Description = "Old Version V HUB",  -- Description of the button | string, optional 
+    Callback = function(value) -- code executed on interaction with the element | function,  optional
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/V31nc/2642/Created/VHub"))()
+    end,
+})
+
+local Button: seven = Section:NewButton({
+    Name = "Rizz", -- Name of the button | string, required
+    Description = "Universal Script for Several Games",  -- Description of the button | string, optional 
+    Callback = function(value) -- code executed on interaction with the element | function,  optional
+        loadstring(game:HttpGet("https://pastebin.com/raw/pPMRh5YJ"))()
+    end,
+})
+
+local Button: seven = Section:NewButton({
+    Name = "Script HUB V2", -- Name of the button | string, required
+    Description = "Latest Version of HUB Script",  -- Description of the button | string, optional 
+    Callback = function(value) -- code executed on interaction with the element | function,  optional
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/scripthubekitten/SCRIPTHUBV2/main/SCRIPTHUBV2", true))()
+    end,
+})
+
+local Section: seven = Tab:NewSection({
+    Name = "More Scripts", -- Name of the section | string, required
+    Description = "Scripts That Can Be Visual And Action", -- Description of the section | string, optional 
+})
+
+local Toggle: seven = Section:NewToggle({
+    Name = "Fullbright", -- Name of the toggle | string, required
+    Description = "Can See In Darkness And Turn Darkness Into Light",  -- Description of the toggle | string, optional 
+    CurrentState = false, -- default state of the toggle | bool, optional
+    Callback = function(value) -- code executed on interaction with the element | function,  optional
+        loadstring(game:HttpGet(('https://pastebin.com/raw/06iG6YkU'),true))()
+    end,
+})
+
+local Button: seven = Section:NewButton({
+    Name = "Fly [Mobile]", -- Name of the button | string, required
+    Description = "Can Fly Character On Mobile Platform",  -- Description of the button | string, optional 
+    Callback = function(value) -- code executed on interaction with the element | function,  optional
+        loadstring(game:HttpGet("https://pastebin.com/raw/ySypYydL"))()
+    end,
+})
+
+local Button: seven = Section:NewButton({
+    Name = "Fly HD Admin V1", -- Name of the button | string, required
+    Description = "Script Created By DXP Team",  -- Description of the button | string, optional 
+    Callback = function(value) -- code executed on interaction with the element | function,  optional
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/TakeModzz/Ignore-00000/main/Ignore"))()
+    end,
+})
+
+local Button: seven = Section:NewButton({
+    Name = "Permanent Shiftlock", -- Name of the button | string, required
+    Description = "Shiftlock That Will Not Disappear After Character Dies",  -- Description of the button | string, optional 
+    Callback = function(value) -- code executed on interaction with the element | function,  optional
+       loadstring(game:HttpGet("https://scriptblox.com/raw/Universal-Script-Permanent-Shiftlock-11830"))() 
+    end,
+})
+
+local Button: seven = Section:NewButton({
+    Name = "Noclip", -- Name of the button | string, required
+    Description = "Can Penetrate Walls With Just One Click",  -- Description of the button | string, optional 
+    Callback = function(value) -- code executed on interaction with the element | function,  optional
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/GamerAbhiyanYT/Script-Op/main/SCRIPT%20Noclip"))()
+    end,
+})
+
+local Button: seven = Section:NewButton({
+    Name = "Infinite Jump", -- Name of the button | string, required
+    Description = "Warning: Anti Rejoin",  -- Description of the button | string, optional 
+    Callback = function(value) -- code executed on interaction with the element | function,  optional
+        loadstring(game:HttpGet(('https://pastebin.com/raw/V3DKCQTT'),true))
+    end,
+})
+
+local Button: seven = Section:NewButton({
+    Name = "Infinite Jump V2", -- Name of the button | string, required
+    Description = "Latest Version",  -- Description of the button | string, optional 
+    Callback = function(value) -- code executed on interaction with the element | function,  optional
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/shakar60/oksinfjump/main/workssssss",true))()
+    end,
+})
+
+local Button: seven = Section:NewButton({
+    Name = "Infinite Yield [IY]", -- Name of the button | string, required
+    Description = "There Are Much Admin Commands",  -- Description of the button | string, optional 
+    Callback = function(value) -- code executed on interaction with the element | function,  optional
+        loadstring(game:HttpGet(('https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source'),true))()
+    end,
+})
+
+local Button: seven = Section:NewButton({
+    Name = "Player ESP [Name]", -- Name of the button | string, required
+    Description = "Can Know Other Players' Usernames",  -- Description of the button | string, optional 
+    Callback = function(value) -- code executed on interaction with the element | function,  optional
+        loadstring(game:HttpGet(('https://raw.githubusercontent.com/zachisfunny/ROBLOX-ESP/main/Script'),true))()
+    end,
+})
+
+local Button: seven = Section:NewButton({
+    Name = "Player ESP [Cham]", -- Name of the button | string, required
+    Description = "Can Know Where Other Players Are With Full Body ESP",  -- Description of the button | string, optional 
+    Callback = function(value) -- code executed on interaction with the element | function,  optional
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/GamerAbhiyanYT/ESP/refs/heads/main/Players"))()
+    end,
+})
+
+local Button: seven = Section:NewButton({
+    Name = "Keyboard V1", -- Name of the button | string, required
+    Description = "Default Keyboard Version",  -- Description of the button | string, optional 
+    Callback = function(value) -- code executed on interaction with the element | function,  optional
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/advxzivhsjjdhxhsidifvsh/mobkeyboard/main/main.txt", true))()
+    end,
+})
+
+local Button: seven = Section:NewButton({
+    Name = "Keyboard V2", -- Name of the button | string, required
+    Description = "Not the Latest Version, But the Second Version",  -- Description of the button | string, optional 
+    Callback = function(value) -- code executed on interaction with the element | function,  optional
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/BatuKvi123/Keyboardv3/main/mobKeyboard"))()
+    end,
+})
+
+local Button: seven = Section:NewButton({
+    Name = "Keyboard V3", -- Name of the button | string, required
+    Description = "Not the Latest Version, But the Third Version",  -- Description of the button | string, optional 
+    Callback = function(value) -- code executed on interaction with the element | function,  optional
+        loadstring(game:HttpGet("https://gist.githubusercontent.com/RedZenXYZ/4d80bfd70ee27000660e4bfa7509c667/raw/da903c570249ab3c0c1a74f3467260972c3d87e6/KeyBoard%2520From%2520Ohio%2520Fr%2520Fr"))()
+    end,
+})
+
+local Button: seven = Section:NewButton({
+    Name = "Teleport Tools", -- Name of the button | string, required
+    Description = "A Tool That Can Teleport You To The Place You Click",  -- Description of the button | string, optional 
+    Callback = function(value) -- code executed on interaction with the element | function,  optional
+        loadstring(game:HttpGet(('https://pastebin.com/raw/iMKYkmcu'),true))()
+    end,
+})
+
+local Button: seven = Section:NewButton({
+    Name = "Auto Piano", -- Name of the button | string, required
+    Description = "Script That Can Play Piano Alone Without Any Help",  -- Description of the button | string, optional 
+    Callback = function(value) -- code executed on interaction with the element | function,  optional
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/Sw1ndlerScripts/RobloxScripts/main/Misc Scripts/PianoAutoplayer.lua",true))()
+    end,
+})
+
+local Button: seven = Section:NewButton({
+    Name = "Better Roblox V2", -- Name of the button | string, required
+    Description = "Can Change Your Roblox (In Game) Look For Better",  -- Description of the button | string, optional 
+    Callback = function(value) -- code executed on interaction with the element | function,  optional
+        loadstring(game:HttpGet("https://eternityhub.xyz/BetterRoblox/Loader"))
+    end,
+})
+
+local Button: seven = Section:NewButton({
+    Name = "Auto Clicker", -- Name of the button | string, required
+    Description = "Automatic Attack [Applies Only to Tools Like a Sword]",  -- Description of the button | string, optional 
+    Callback = function(value) -- code executed on interaction with the element | function,  optional
+        loadstring(game:HttpGet("https://pastebin.com/raw/CmVvdeuc"))()
+    end,
+})
+
+local Button: seven = Section:NewButton({
+    Name = "Show Rejoin Button In Disconnected", -- Name of the button | string, required
+    Description = "When You Disconnected You Can Rejoin Without Needing To Reconnect",  -- Description of the button | string, optional 
+    Callback = function(value) -- code executed on interaction with the element | function,  optional
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/rouxhaver/scripts-2/main/rejoin%20button%20for%20kick%20message.lua"))()
+    end,
+})
+
+local Button: seven = Section:NewButton({
+    Name = "Do Not Press Me", -- Name of the button | string, required
+    Description = "Something Will Happen",  -- Description of the button | string, optional 
+    Callback = function(value) -- code executed on interaction with the element | function,  optional
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/Kitzoon/Rogue-Hub/main/Main.lua", true))()
+    end,
+})
+
+local Button: seven = Section:NewButton({
+    Name = "Never Press This Button!", -- Name of the button | string, required
+    Description = "Something Will Happen",  -- Description of the button | string, optional 
+    Callback = function(value) -- code executed on interaction with the element | function,  optional
+            for _, v in pairs(game.CoreGui:GetChildren()) do
+            if v:IsA("ScreenGui") then
+                v:Destroy()
+            end
+        end
+    
+        -- Removing UI from PlayerGui
+        for _, v in pairs(game.Players.LocalPlayer.PlayerGui:GetChildren()) do
+            if v:IsA("ScreenGui") then
+                v:Destroy()
+            end
+        end
+    end,
+})
+
+local Button: seven = Section:NewButton({
+    Name = "Rejoin Server", -- Nama tombol
+    Description = "Click to rejoin the same server", -- Deskripsi tombol
+    Callback = function()
+        -- Get the services you need
+        local TeleportService = game:GetService("TeleportService")
+        local Players = game:GetService("Players")
+        local LocalPlayer = Players.LocalPlayer
+        
+        -- Function to try rejoin
+        local function attemptRejoin()
+            local success, errorMessage = pcall(function()
+                -- Use TeleportToPlaceInstance with current PlaceId and JobId
+                TeleportService:TeleportToPlaceInstance(game.PlaceId, game.JobId, LocalPlayer)
+            end)
+            
+            if not success then
+                warn("Failed to rejoin: " .. errorMessage)
+                -- Tampilkan notifikasi jika gagal
+                game:GetService("StarterGui"):SetCore("SendNotification", {
+                    Title = "Rejoin Failed",
+                    Text = "Unable to rejoin: " .. errorMessage,
+                    Duration = 5
+                })
+            end
+        end
+        
+        -- Show notification that rejoin is being processed
+        game:GetService("StarterGui"):SetCore("SendNotification", {
+            Title = "Processing Rejoin",
+            Text = "Trying to rejoin the server...",
+            Duration = 3
+        })
+        
+        -- Try Rejoin
+        attemptRejoin()
+    end,
+})
+
+local Section: seven = Tab:NewSection({
+    Name = "FE Script", -- Name of the section | string, required
+    Description = "FE Is A Script That Can Be Viewed By Others", -- Description of the section | string, optional 
+})
+
+local Button: seven = Section:NewButton({
+    Name = "FE Invisible", -- Name of the button | string, required
+    Description = "This Script Does Not Work With Noclip Simultaneously",  -- Description of the button | string, optional 
+    Callback = function(value) -- code executed on interaction with the element | function,  optional
+        loadstring(game:HttpGet("https://pastebin.com/raw/2ucYrZ9H"))()
+    end,
+})
+
+local Button: seven = Section:NewButton({
+    Name = "FE R15 Animation Style", -- Name of the button | string, required
+    Description = "Can Change Your Animation Style",  -- Description of the button | string, optional 
+    Callback = function(value) -- code executed on interaction with the element | function,  optional
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/GamingScripter/Animation-Hub/main/Animation%20Gui", true))()
+    end,
+})
+
+local Button: seven = Section:NewButton({
+    Name = "FE Free Emote", -- Name of the button | string, required
+    Description = "Only Works In R15 Mode",  -- Description of the button | string, optional 
+    Callback = function(value) -- code executed on interaction with the element | function,  optional
+        loadstring(game:HttpGet("https://pastebin.com/raw/eCpipCTH"))()
+    end,
+})
+
+local Button: seven = Section:NewButton({
+    Name = "FE Rewind", -- Name of the button | string, required
+    Description = "You Fell? This Script Can Restore Your Character Before You Fell",  -- Description of the button | string, optional 
+    Callback = function(value) -- code executed on interaction with the element | function,  optional
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/0Ben1/fe./main/L"))()
+    end,
+})
+
+local Button: seven = Section:NewButton({
+    Name = "FE Teleport To Player", -- Name of the button | string, required
+    Description = "You Can Teleport Your Character To Other Players",  -- Description of the button | string, optional 
+    Callback = function(value) -- code executed on interaction with the element | function,  optional
+        loadstring(game:HttpGet(("https://pastebin.com/raw/YNVbeqPy")))()
+    end,
+})
+
+local Button: seven = Section:NewButton({
+    Name = "FE Kill", -- Name of the button | string, required
+    Description = "Script That Can Kill Player",  -- Description of the button | string, optional 
+    Callback = function(value) -- code executed on interaction with the element | function,  optional
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/GamerAbhiyanYT/Scrim/main/Kill"))()
+    end,
+})
+
+local Button: seven = Section:NewButton({
+    Name = "FE Anti Fling V1", -- Name of the button | string, required
+    Description = "You Cannot Be Fling By Other Players First Version",  -- Description of the button | string, optional 
+    Callback = function(value) -- code executed on interaction with the element | function,  optional
+        loadstring(game:HttpGet("https://pastebin.com/raw/Q0Nh2SYx"))()
+    end,
+})
+
+local Button: seven = Section:NewButton({
+    Name = "FE Anti Fling V2", -- Name of the button | string, required
+    Description = "You Cannot Be Fling By Other Players Second Version",  -- Description of the button | string, optional 
+    Callback = function(value) -- code executed on interaction with the element | function,  optional
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/shakar60/anti.-./main/fling",true))()
+    end,
+})
+
+local Button: seven = Section:NewButton({
+    Name = "FE Anti Fling V3", -- Name of the button | string, required
+    Description = "You Cannot Be Fling By Other Players Third Version",  -- Description of the button | string, optional 
+    Callback = function(value) -- code executed on interaction with the element | function,  optional
+        loadstring(game:HttpGet(('https://pastebin.com/raw/GxdesRQx'),true))()
+    end,
+})
+
+local Button: seven = Section:NewButton({
+    Name = "FE Fling V1", -- Name of the button | string, required
+    Description = "You Can Fling Other Players First Version",  -- Description of the button | string, optional 
+    Callback = function(value) -- code executed on interaction with the element | function,  optional
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/0Ben1/fe./main/Fling%20GUI"))()
+    end,
+})
+
+local Button: seven = Section:NewButton({
+    Name = "FE Fling V2", -- Name of the button | string, required
+    Description = "You Can Fling Other Players Second Version",  -- Description of the button | string, optional 
+    Callback = function(value) -- code executed on interaction with the element | function,  optional
+        loadstring(game:HttpGet('https://pastebin.com/raw/r97d7dS0', true))
+    end,
+})
+
+local Button: seven = Section:NewButton({
+    Name = "FE Click To Fling", -- Name of the button | string, required
+    Description = "Press To The Player You Want To Fling",  -- Description of the button | string, optional 
+    Callback = function(value) -- code executed on interaction with the element | function,  optional
+        loadstring(game:HttpGet(('https://raw.githubusercontent.com/0Ben1/fe/main/obf_4Q10q272NIQc093Os32uBi29U9PWkU0d3Tr1Uh4k92vus2u10786Z0jep5uhqE2N.lua.txt'),true))()
+    end,
+})
+
+local Button: seven = Section:NewButton({
+    Name = "FE R15 To R6", -- Name of the button | string, required
+    Description = "Changing R15 Animation To R6",  -- Description of the button | string, optional 
+    Callback = function(value) -- code executed on interaction with the element | function,  optional
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/Imagnir/r6_anims_for_r15/main/r6_anims.lua", true))()
+    end,
+})
+
+local Button: seven = Section:NewButton({
+    Name = "FE Lift Player", -- Name of the button | string, required
+    Description = "You Can Make Target Player Go Up",  -- Description of the button | string, optional 
+    Callback = function(value) -- code executed on interaction with the element | function,  optional
+        loadstring(game:HttpGet("https://pastebin.com/raw/yJuZWddm"))()
+    end,
+})
+
+local Button: seven = Section:NewButton({
+    Name = "FE Chat Executor", -- Name of the button | string, required
+    Description = "This Script Sometimes Error",  -- Description of the button | string, optional 
+    Callback = function(value) -- code executed on interaction with the element | function,  optional
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/zephyr10101/chat-executor/main/chat-executor",true))()
+    end,
+})
+
+local Button: seven = Section:NewButton({
+    Name = "FE Sound Panel", -- Name of the button | string, required
+    Description = "He Said This Script Can Make A Sound",  -- Description of the button | string, optional 
+    Callback = function(value) -- code executed on interaction with the element | function,  optional
+        loadstring(game:HttpGet("https://pastebin.com/raw/SWsFdk2U"))()
+    end,
+})
+
+local Button: seven = Section:NewButton({
+    Name = "FE Fake Lag", -- Name of the button | string, required
+    Description = "Your Character Lagging But You Are Not Lagging",  -- Description of the button | string, optional 
+    Callback = function(value) -- code executed on interaction with the element | function,  optional
+        loadstring(game:HttpGet('https://pastebin.com/raw/VM3b0Thg'))()
+    end,
+})
+
+local Button: seven = Section:NewButton({
+    Name = "FE Switch Lag", -- Name of the button | string, required
+    Description = "IDK About This Script",  -- Description of the button | string, optional 
+    Callback = function(value) -- code executed on interaction with the element | function,  optional
+        loadstring(game:HttpGet(('https://raw.githubusercontent.com/0Ben1/fe/main/Protected%20-%202023-05-28T225112.055.lua.txt'),true))()
+    end,
+})
+
+local Section: seven = Tab:NewSection({
+    Name = "Games", -- Name of the section | string, required
+    Description = "Script Of Many Games", -- Description of the section | string, optional 
+})
+
+local Button: seven = Section:NewButton({
+    Name = "Adopt Me", -- Name of the button | string, required
+    Description = "If You See Option Chose Adopt Me",  -- Description of the button | string, optional 
+    Callback = function(value) -- code executed on interaction with the element | function,  optional
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/IceMael7/NewIceHub/main/Brookhaven"))()
+    end,
+})
+
+local Button: seven = Section:NewButton({
+    Name = "BedWars", -- Name of the button | string, required
+    Description = "BedWars Script",  -- Description of the button | string, optional 
+    Callback = function(value) -- code executed on interaction with the element | function,  optional
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/bojoexploitz/yooo/main/itsobfuscated/InfinityHubTooOP", true))()
+    end,
+})
+
+local Button: seven = Section:NewButton({
+    Name = "Brookhaven", -- Name of the button | string, required
+    Description = "IceHUB",  -- Description of the button | string, optional 
+    Callback = function(value) -- code executed on interaction with the element | function,  optional
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/IceMael7/NewIceHub/main/Brookhaven"))()
+    end,
+})
+
+local Button: seven = Section:NewButton({
+    Name = "Brookhaven V2", -- Name of the button | string, required
+    Description = "Darkone HUB",  -- Description of the button | string, optional 
+    Callback = function(value) -- code executed on interaction with the element | function,  optional
+        loadstring(game:HttpGet('https://raw.githubusercontent.com/TheDarkoneMarcillisePex/Other-Scripts/main/Brook%20Haven%20Gui'))()
+    end,
+})
+
+local Button: seven = Section:NewButton({
+    Name = "Brookhaven V3", -- Name of the button | string, required
+    Description = "Sander X",  -- Description of the button | string, optional 
+    Callback = function(value) -- code executed on interaction with the element | function,  optional
+        loadstring(game:HttpGet("https://rawscripts.net/raw/Brookhaven-RP-sander-x-22494"))()
+    end,
+})
+
+local Button: seven = Section:NewButton({
+    Name = "Bloxfruit", -- Name of the button | string, required
+    Description = "IDK About This Script",  -- Description of the button | string, optional 
+    Callback = function(value) -- code executed on interaction with the element | function,  optional
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/sinret/rbxscript.com-scripts-reuploads-/main/bf1", true))()
+    end,
+})
+
+local Button: seven = Section:NewButton({
+    Name = "Build A Boat For Treasure", -- Name of the button | string, required
+    Description = "Auto Win And More",  -- Description of the button | string, optional 
+    Callback = function(value) -- code executed on interaction with the element | function,  optional
+        loadstring(game:HttpGet('https://raw.githubusercontent.com/1201for/littlegui/main/Build-A-Boat'))()
+    end,
+})
+
+local Button: seven = Section:NewButton({
+    Name = "Break In [STORY] V1", -- Name of the button | string, required
+    Description = "break in [STORY]",  -- Description of the button | string, optional 
+    Callback = function(value) -- code executed on interaction with the element | function,  optional
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/RubyBoo4life/break-in-v1/main/.gitignore"))()
+    end,
+})
+
+local Button: seven = Section:NewButton({
+    Name = "BloxHunt", -- Name of the button | string, required
+    Description = "Key Will Be Automatically Copied When Execute It",  -- Description of the button | string, optional 
+    Callback = function(value) -- code executed on interaction with the element | function,  optional
+        pcall(function()
+            Rox_Hub = true
+            loadstring(game:HttpGet("https://gist.githubusercontent.com/HaxxV1/d7cfdb5090e819a84a8db22fb113f39d/raw"))()
+        end)
+        setclipboard("RoxHub_KeyZRTEDFGQERZX")
+    end,
+})
+
+local Button: seven = Section:NewButton({
+    Name = "Cart Ride Around Nothing", -- Name of the button | string, required
+    Description = "Key Will Be ClipBoard When Execute It",  -- Description of the button | string, optional 
+    Callback = function(value) -- code executed on interaction with the element | function,  optional
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/LOLking123456/ride-cart/main/Cart11"))()
+        setclipboard("cart1ride2around3nothing12345..!!990")
+    end,
+})
+
+local Button: seven = Section:NewButton({
+    Name = "Clone Tycoon 2", -- Name of the button | string, required
+    Description = "IDK About This Script",  -- Description of the button | string, optional 
+    Callback = function(value) -- code executed on interaction with the element | function,  optional
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/frencaliber/LuaWareLoader.lw/main/luawareloader.wtf",true))()
+    end,
+})
+
+local Button: seven = Section:NewButton({
+    Name = "Cant Say The Word", -- Name of the button | string, required
+    Description = "Bypass Chat To Can Speak A Word",  -- Description of the button | string, optional 
+    Callback = function(value) -- code executed on interaction with the element | function,  optional
+        loadstring(game:HttpGet("https://scriptblox.com/raw/Cant-Say-the-Word-Lets-you-say-your-word-UNPATCHABLE-4679"))()
+    end,
+})
+
+local Button: seven = Section:NewButton({
+    Name = "Cart Ride Into Rdite", -- Name of the button | string, required
+    Description = "IDK About This Script",  -- Description of the button | string, optional 
+    Callback = function(value) -- code executed on interaction with the element | function,  optional
+        loadstring(game:HttpGet(('https://raw.githubusercontent.com/hussain1323232234/My-Scripts/main/Cart%20Ride%20Into%20Rdite!'),true))()
+    end,
+})
+
+local Button: seven = Section:NewButton({
+    Name = "Doors | MSDOORS", -- Name of the button | string, required
+    Description = "Working",  -- Description of the button | string, optional 
+    Callback = function(value) -- code executed on interaction with the element | function,  optional
+        loadstring(game:HttpGet(("https://raw.githubusercontent.com/mstudio45/MSDOORS/7bd97c2d956a775d683c2d7973d79715b30998ea/MSDOORS/Moonsec.lua"),true))()
+    end,
+})
+
+local Button: seven = Section:NewButton({
+    Name = "Doors | POOPDOORS", -- Name of the button | string, required
+    Description = "Working",  -- Description of the button | string, optional 
+    Callback = function(value) -- code executed on interaction with the element | function,  optional
+        loadstring(game:HttpGet('https://raw.githubusercontent.com/zoophiliaphobic/POOPDOORS/main/script.lua'))()
+    end,
+})
+
+local Button: seven = Section:NewButton({
+    Name = "Doors | Vynixius", -- Name of the button | string, required
+    Description = "Don't Work On Mobile",  -- Description of the button | string, optional 
+    Callback = function(value) -- code executed on interaction with the element | function,  optional
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/RegularVynixu/Vynixius/main/Doors/Script.lua"))()
+    end,
+})
+
+local Button: seven = Section:NewButton({
+    Name = "Doors | Darkrai X", -- Name of the button | string, required
+    Description = "Sometimes Bug",  -- Description of the button | string, optional 
+    Callback = function(value) -- code executed on interaction with the element | function,  optional
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/GamingScripter/Darkrai-X/main/Games/Doors"))()
+    end,
+})
+
+local Button: seven = Section:NewButton({
+    Name = "Doors | NERD V4", -- Name of the button | string, required
+    Description = "IDK About This Script",  -- Description of the button | string, optional 
+    Callback = function(value) -- code executed on interaction with the element | function,  optional
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/MrNeRD0/Doors-Hack/main/doorsnerdv4.lua"))()
+    end,
+})
+
+local Button: seven = Section:NewButton({
+    Name = "Despicable Me 4 Heist Obby", -- Name of the button | string, required
+    Description = "IDK About This Script",  -- Description of the button | string, optional 
+    Callback = function(value) -- code executed on interaction with the element | function,  optional
+        while wait() do game.
+            MarketplaceService:SignalPromptPurchaseFinished(game.Players.LocalPlayer,17596052530,false)
+        end
+    end,
+})
+
+local Button: seven = Section:NewButton({
+    Name = "Dead Rails | Linur HUB", -- Name of the button | string, required
+    Description = "Need A Key",  -- Description of the button | string, optional 
+    Callback = function(value) -- code executed on interaction with the element | function,  optional
+        (loadstring or load)(game:HttpGet("https://getnative.cc/script/loader"))()
+    end,
+})
+
+local Button: seven = Section:NewButton({
+    Name = "Dead Rails | Tora IsMe", -- Name of the button | string, required
+    Description = "No Key",  -- Description of the button | string, optional 
+    Callback = function(value) -- code executed on interaction with the element | function,  optional
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/gumanba/Scripts/main/DeadRails"))()
+    end,
+})
+
+local Button: seven = Section:NewButton({
+    Name = "Dead Rails | RINGTA Script", -- Name of the button | string, required
+    Description = "Get A Jade Sword And Jade Mask",  -- Description of the button | string, optional 
+    Callback = function(value) -- code executed on interaction with the element | function,  optional
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/ringtaa/NEWFIXEDUI.github.io/refs/heads/main/ui.lua"))() -- GUI TP Sterling
+    end,
+})
+
+local Button: seven = Section:NewButton({
+    Name = "Epic Minigames", -- Name of the button | string, required
+    Description = "IDK About This Script",  -- Description of the button | string, optional 
+    Callback = function(value) -- code executed on interaction with the element | function,  optional
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/SlamminPig/rblxgames/main/Epic%20Minigames/EpicMinigamesGUI"))()
+    end,
+})
+
+local Button: seven = Section:NewButton({
+    Name = "Evade", -- Name of the button | string, required
+    Description = "IDK About This Script",  -- Description of the button | string, optional 
+    Callback = function(value) -- code executed on interaction with the element | function,  optional
+        loadstring(game:HttpGet('https://raw.githubusercontent.com/9Strew/roblox/main/gamescripts/evade.lua'))()
+    end,
+})
+
+local Button: seven = Section:NewButton({
+    Name = "Flee The Facility", -- Name of the button | string, required
+    Description = "IDK About This Script",  -- Description of the button | string, optional 
+    Callback = function(value) -- code executed on interaction with the element | function,  optional
+        if game.PlaceId == 893973440 or game.PlaceId == 1738581510 then
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/bedra45/Random-games-xd/main/bedraFtfFinalGUI"))()
+        else
+            game:GetService("StarterGui"):SetCore("SendNotification",{
+            Title = "Note!",
+            Text = "Please Join Flee the facility first."
+            })
+        end
+    end,
+})
+
+local Button: seven = Section:NewButton({
+    Name = "Flee The Facility | YARHM Reborn", -- Name of the button | string, required
+    Description = "Can Universal And That Game",  -- Description of the button | string, optional 
+    Callback = function(value) -- code executed on interaction with the element | function,  optional
+        loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-YARHM-Elite-14708"))()
+    end,
+})
+
+local Button: seven = Section:NewButton({
+    Name = "Get To The Top", -- Name of the button | string, required
+    Description = "IDK About This Script",  -- Description of the button | string, optional 
+    Callback = function(value) -- code executed on interaction with the element | function,  optional
+        loadstring(game:HttpGet("https://pastebin.com/raw/FbHPCWdK"))()
+    end,
+})
+
+local Button: seven = Section:NewButton({
+    Name = "Infinite Money / UGC Limited", -- Name of the button | string, required
+    Description = "IDK About This Script",  -- Description of the button | string, optional 
+    Callback = function(value) -- code executed on interaction with the element | function,  optional
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/Imalwibest/Imalwibest/main/wynerdV2.lua",true))()
+    end,
+})
+
+local Button: seven = Section:NewButton({
+    Name = "MeepCity", -- Name of the button | string, required
+    Description = "IDK About This Script",  -- Description of the button | string, optional 
+    Callback = function(value) -- code executed on interaction with the element | function,  optional
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/synolope/mpcity/main/mainscript.lua",true))()
+    end,
+})
+
+local Button: seven = Section:NewButton({
+    Name = "My Restaurant | Auto Farm", -- Name of the button | string, required
+    Description = "Auto Farm",  -- Description of the button | string, optional 
+    Callback = function(value) -- code executed on interaction with the element | function,  optional
+        loadstring(game:HttpGet("https://pastebin.com/raw/kV7cu04b"))()
+    end,
+})
+
+local Button: seven = Section:NewButton({
+    Name = "Millionaire Empire Tycoon | Cash = 1000000000", -- Name of the button | string, required
+    Description = "Infinite Money",  -- Description of the button | string, optional 
+    Callback = function(value) -- code executed on interaction with the element | function,  optional
+        Callback = function()
+            while true do
+                game:GetService("ReplicatedStorage").RespawnService:FireServer(1000000000)
+                task.wait(0.5)  -- ⚠️ Delay penting!
+            end
+        end
+    end,
+})
+
+local Button: seven = Section:NewButton({
+    Name = "Murder Mistery 2", -- Name of the button | string, required
+    Description = "By: Eclipse MM2",  -- Description of the button | string, optional 
+    Callback = function(value) -- code executed on interaction with the element | function,  optional
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/Ethanoj1/EclipseMM2/master/Script", true))()
+    end,
+})
+
+local Button: seven = Section:NewButton({
+    Name = "Murder Mistery 2 | Auto Farm", -- Name of the button | string, required
+    Description = "Automatic Get A Coin Or Money",  -- Description of the button | string, optional 
+    Callback = function(value) -- code executed on interaction with the element | function,  optional
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/ToraIsMe/ToraIsMe/main/0mm"))()
+    end,
+})
+
+local Button: seven = Section:NewButton({
+    Name = "Mega Hide And Seek", -- Name of the button | string, required
+    Description = "IDK About This Script",  -- Description of the button | string, optional 
+    Callback = function(value) -- code executed on interaction with the element | function,  optional
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/ToraIsMe/ToraIsMe/main/0megahide"))()
+    end,
+})
+
+local Button: seven = Section:NewButton({
+    Name = "Natural Disaster Survival | Green Ballon", -- Name of the button | string, required
+    Description = "Get A Green Ballon",  -- Description of the button | string, optional 
+    Callback = function(value) -- code executed on interaction with the element | function,  optional
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/2dgeneralspam1/scripts-and-stuff/master/scripts/LoadstringUjHI6RQpz2o8" , true))()
+    end,
+})
+
+local Button: seven = Section:NewButton({
+    Name = "Natural Disaster Survival | Simple UI", -- Name of the button | string, required
+    Description = "Disabled Fall Damaged",  -- Description of the button | string, optional 
+    Callback = function(value) -- code executed on interaction with the element | function,  optional
+        loadstring(game:HttpGet("https://pastebin.com/raw/FktJaRpR"))()
+    end,
+})
+
+local Button: seven = Section:NewButton({
+    Name = "Pet Simulator X", -- Name of the button | string, required
+    Description = "IDK About This Script",  -- Description of the button | string, optional 
+    Callback = function(value) -- code executed on interaction with the element | function,  optional
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/Muhammad6196/Project-WD/main/Mainstring.lua"))()
+    end,
+})
+
+local Button: seven = Section:NewButton({
+    Name = "Plss Donate", -- Name of the button | string, required
+    Description = "1 Robux For Plus 5 Speed",  -- Description of the button | string, optional 
+    Callback = function(value) -- code executed on interaction with the element | function,  optional
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/CF-Trail/tzechco-PlsDonateAutofarmBackup/main/autofarm"))()
+    end,
+})
+
+local Button: seven = Section:NewButton({
+    Name = "Rainbow Friend | BrokWare", -- Name of the button | string, required
+    Description = "IDK About This Script",  -- Description of the button | string, optional 
+    Callback = function(value) -- code executed on interaction with the element | function,  optional
+        loadstring(game:HttpGet('https://raw.githubusercontent.com/Ihaveash0rtnamefordiscord/BorkWare/main/Scripts/' .. game.GameId .. ".lua"))(' Watermelon ? ')
+    end,
+})
+
+local Button: seven = Section:NewButton({
+    Name = "Rainbow Friend | Chapter 2", -- Name of the button | string, required
+    Description = "IDK About This Script",  -- Description of the button | string, optional 
+    Callback = function(value) -- code executed on interaction with the element | function,  optional
+        loadstring(game:HttpGet(('https://raw.githubusercontent.com/stillnotgivingafuck/LuckyBlocks/main/loader.lua')))()
+    end,
+})
+
+local Button: seven = Section:NewButton({
+    Name = "Rainbow Friend | Chapter 1", -- Name of the button | string, required
+    Description = "IDK About This Script",  -- Description of the button | string, optional 
+    Callback = function(value) -- code executed on interaction with the element | function,  optional
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/JNHHGaming/Rainbow-Friends/main/Rainbow%20Friends"))()
+    end,
+})
+
+local Button: seven = Section:NewButton({
+    Name = "Survive The Killer", -- Name of the button | string, required
+    Description = "IDK About This Script",  -- Description of the button | string, optional 
+    Callback = function(value) -- code executed on interaction with the element | function,  optional
+        loadstring(game:HttpGet("https://scriptblox.com/raw/Survive-the-Killer!-iluv-stk-script-8913", true))()
+    end,
+})
+
+local Button: seven = Section:NewButton({
+    Name = "Survive The Kiler | ChairWare", -- Name of the button | string, required
+    Description = "IDK About This Script",  -- Description of the button | string, optional 
+    Callback = function(value) -- code executed on interaction with the element | function,  optional
+        loadstring(game:HttpGet("https://scriptblox.com/raw/Survive-the-Killer!-ChairWare-Hub-9854"))()
+    end,
+})
+
+local Button: seven = Section:NewButton({
+    Name = "SteepSteps", -- Name of the button | string, required
+    Description = "IDK About This Script",  -- Description of the button | string, optional 
+    Callback = function(value) -- code executed on interaction with the element | function,  optional
+        loadstring(game:HttpGet('https://raw.githubusercontent.com/Cutsences/SteepSteps/main/SteepSteps.lua'))()
+    end,
+})
+
+local Button: seven = Section:NewButton({
+    Name = "Super Simon Says", -- Name of the button | string, required
+    Description = "IDK About This Script",  -- Description of the button | string, optional 
+    Callback = function(value) -- code executed on interaction with the element | function,  optional
+        loadstring(game:HttpGet('https://raw.githubusercontent.com/creepstu/special-octo-umbrella/main/Source'))()
+    end,
+})
+
+local Button: seven = Section:NewButton({
+    Name = "The Intruder", -- Name of the button | string, required
+    Description = "This Script Won't Work",  -- Description of the button | string, optional 
+    Callback = function(value) -- code executed on interaction with the element | function,  optional
+        loadstring(game:HttpGet("https://pastebin.com/raw/FGjjwm6W"))()
+    end,
+})
+
+local Button: seven = Section:NewButton({
+    Name = "The Mimic", -- Name of the button | string, required
+    Description = "IDK About This Script",  -- Description of the button | string, optional 
+    Callback = function(value) -- code executed on interaction with the element | function,  optional
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/ph-hub/The-Mimic/main/WizardUi.lua",true))()
+    end,
+})
+
+local Button: seven = Section:NewButton({
+    Name = "The Best Strongest Battle Ground", -- Name of the button | string, required
+    Description = "IDK About This Script",  -- Description of the button | string, optional 
+    Callback = function(value) -- code executed on interaction with the element | function,  optional
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/ShowerHead-FluxTeam/scripts/main/funky-friday-autoplay"))()
+    end,
+})
+
+local Button: seven = Section:NewButton({
+    Name = "Tower Of Hell", -- Name of the button | string, required
+    Description = "IDK About This Script",  -- Description of the button | string, optional 
+    Callback = function(value) -- code executed on interaction with the element | function,  optional
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/TrixAde/Proxima-Hub/main/Main.lua"))()
+    end,
+})
+
+local Tab: eight = Window:NewTab({
+    Name = "Universal", -- Name of the tab | string, required
+    Icon = "rbxassetid://1234" -- Icon for the tab button | string, optional
+})
+
+local Section: eight = Tab:NewSection({
+    Name = "This Script Will Probably Work In All Games", -- Name of the section | string, required
+    Description = "Sometimes There's Something Bugy", -- Description of the section | string, optional 
+})
+
+local Button: eight = Section:NewButton({
+    Name = "Aimbot V2", -- Name of the button | string, required
+    Description = "IDK About This Script",  -- Description of the button | string, optional 
+    Callback = function(value) -- code executed on interaction with the element | function,  optional
+        loadstring(game:HttpGet('https://raw.githubusercontent.com/PABLOSleuth2/Scripts1/main/RobloxScripts/TEST/aimbot_v2.lua'))()
+    end,
+})
+
+local Button: eight = Section:NewButton({
+    Name = "Silent Aim", -- Name of the button | string, required
+    Description = "IDK About This Script",  -- Description of the button | string, optional 
+    Callback = function(value) -- code executed on interaction with the element | function,  optional
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/shakar60/silents.aim/main/s",true))()
+    end,
+})
+
+local Section: eight = Tab:NewSection({
+    Name = "GUI", -- Name of the section | string, required
+    Description = "I Don't Know The Reason 💀", -- Description of the section | string, optional 
+})
+
+local Button: eight = Section:NewButton({
+    Name = "Yeet GUI", -- Name of the button | string, required
+    Description = "Make Someone Yeeted By This",  -- Description of the button | string, optional 
+    Callback = function(value) -- code executed on interaction with the element | function,  optional
+        loadstring(game:HttpGet("https://scriptblox.com/raw/Universal-Script-FE-Yeet-GUI-9620"))()
+    end,
+})
+
+local Button: eight = Section:NewButton({
+    Name = "RTX GUI", -- Name of the button | string, required
+    Description = "Beautify Your Roblox Play Appearance",  -- Description of the button | string, optional 
+    Callback = function(value) -- code executed on interaction with the element | function,  optional
+        loadstring(game:HttpGet(('https://pastefy.ga/xXkUxA0P/raw'),true))()
+    end,
+})
+
+local Button: eight = Section:NewButton({
+    Name = "Fates Admin GUI", -- Name of the button | string, required
+    Description = "You Become Admin In Some Games",  -- Description of the button | string, optional 
+    Callback = function(value) -- code executed on interaction with the element | function,  optional
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/fatesc/fates-admin/main/main.lua"))()
+    end,
+})
+
+local Button: eight = Section:NewButton({
+    Name = "RoGhoul Script GUI", -- Name of the button | string, required
+    Description = "IDK About This Script",  -- Description of the button | string, optional 
+    Callback = function(value) -- code executed on interaction with the element | function,  optional
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/xQuartyx/DonateMe/main/ScriptLoader"))()
+    end,
+})
+
+local Tab: nine = Window:NewTab({
+    Name = "Credit", -- Name of the tab | string, required
+    Icon = "rbxassetid://1234" -- Icon for the tab button | string, optional
+})
+
+local Section: nine = Tab:NewSection({
+    Name = "Showcase", -- Name of the section | string, required
+    Description = "Who Showcased My Script", -- Description of the section | string, optional 
+})
+
+local Button: nine = Section:NewButton({
+    Name = "No One", -- Name of the button | string, required
+    Description = "Yes No One",  -- Description of the button | string, optional 
+    Callback = function(value) -- code executed on interaction with the element | function,  optional
+        print("coming soon")
+    end,
+})
+
+local Section: nine = Tab:NewSection({
+    Name = "Behind This Script", -- Name of the section | string, required
+    Description = "Someone Who Created This Script", -- Description of the section | string, optional 
+})
+
+local Button: nine = Section:NewButton({
+    Name = "GamerAbhiyan", -- Name of the button | string, required
+    Description = "Owner",  -- Description of the button | string, optional 
+    Callback = function(value) -- code executed on interaction with the element | function,  optional
+        print("Who Is GamerAbhiyan?")
+    end,
+})
