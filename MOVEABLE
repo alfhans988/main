@@ -49,8 +49,10 @@ local function id()
 	return tostring(math.random(1, 100)) .. tostring(math.random(1, 50)) .. tostring(math.random(1, 100))
 end
 
+local id = id()
+
 local Orion = Instance.new("ScreenGui")
-Orion.Name = id()
+Orion.Name = id
 if syn then
   syn.protect_gui(Orion)
   Orion.Parent = game.CoreGui
@@ -58,7 +60,7 @@ else
   Orion.Parent = gethui() or game.CoreGui
 end
 
-_G.ScreenGuiDetctor = Orion.Name
+_G.ScreenGuiDetctor = id
 
 function OrionLib:IsRunning()
   if gethui then
