@@ -1,71 +1,104 @@
+-- Phantom Hub | Server Hop Module (Optimized)
+
 local TeleportService = game:GetService("TeleportService")
 local HttpService = game:GetService("HttpService")
 local Players = game:GetService("Players")
 
 local LocalPlayer = Players.LocalPlayer
-local FILE_NAME = "server-hop-temp.json"
+local VISITED_FILE = "server-hop-temp.json"
 
-local AllIDs = {}
-local foundAnything = nil
+local visitedServers = {}
+local cursor = nil
 local currentHour = os.date("!*t").hour
 
--- Load saved server IDs
-local success, data = pcall(function()
-	return HttpService:JSONDecode(readfile(FILE_NAME))
-end)
+-- Load visited servers
+local function loadVisited()
+    local success, data = pcall(function()
+        return HttpService:JSONDecode(readfile(VISITED_FILE))
+    end)
 
-if success and type(data) == "table" then
-	-- Reset file if hour changed
-	if data.hour ~= currentHour then
-		AllIDs = { hour = currentHour, servers = {} }
-		writefile(FILE_NAME, HttpService:JSONEncode(AllIDs))
-	else
-		AllIDs = data
-	end
-else
-	AllIDs = { hour = currentHour, servers = {} }
-	writefile(FILE_NAME, HttpService:JSONEncode(AllIDs))
+    if success and type(data) == "table" then
+        visitedServers = data
+    else
+        visitedServers = { currentHour }
+        pcall(function()
+            writefile(VISITED_FILE, HttpService:JSONEncode(visitedServers))
+        end)
+    end
 end
 
-local function save()
-	writefile(FILE_NAME, HttpService:JSONEncode(AllIDs))
+-- Save visited servers
+local function saveVisited()
+    pcall(function()
+        writefile(VISITED_FILE, HttpService:JSONEncode(visitedServers))
+    end)
 end
 
-local function isVisited(id)
-	return table.find(AllIDs.servers, id) ~= nil
+-- Reset visited servers every hour
+local function resetIfNeeded()
+    if visitedServers[1] ~= currentHour then
+        visitedServers = { currentHour }
+        pcall(function()
+            delfile(VISITED_FILE)
+        end)
+        saveVisited()
+    end
 end
 
-local function TPReturner(placeId)
-	local url = "https://games.roblox.com/v1/games/" .. placeId .. "/servers/Public?sortOrder=Asc&limit=100"
-	if foundAnything then
-		url ..= "&cursor=" .. foundAnything
-	end
+-- Fetch servers
+local function getServers(placeId)
+    local url = "https://games.roblox.com/v1/games/" .. placeId .. "/servers/Public?sortOrder=Asc&limit=100"
+    if cursor then
+        url ..= "&cursor=" .. cursor
+    end
 
-	local site = HttpService:JSONDecode(game:HttpGet(url))
-	foundAnything = site.nextPageCursor
+    local success, result = pcall(function()
+        return HttpService:JSONDecode(game:HttpGet(url))
+    end)
 
-	for _, server in ipairs(site.data) do
-		if server.playing < server.maxPlayers then
-			local id = tostring(server.id)
-			if not isVisited(id) then
-				table.insert(AllIDs.servers, id)
-				save()
-				TeleportService:TeleportToPlaceInstance(placeId, id, LocalPlayer)
-				task.wait(4)
-				return
-			end
-		end
-	end
+    if success then
+        cursor = result.nextPageCursor
+        return result.data
+    end
+
+    return nil
 end
 
-local module = {}
+-- Attempt server hop
+local function hop(placeId)
+    resetIfNeeded()
 
-function module:Teleport(placeId)
-	while task.wait(1) do
-		pcall(function()
-			TPReturner(placeId)
-		end)
-	end
+    local servers = getServers(placeId)
+    if not servers then return end
+
+    for _, server in ipairs(servers) do
+        if server.playing < server.maxPlayers then
+            local serverId = tostring(server.id)
+
+            if not table.find(visitedServers, serverId) then
+                table.insert(visitedServers, serverId)
+                saveVisited()
+
+                TeleportService:TeleportToPlaceInstance(
+                    placeId,
+                    serverId,
+                    LocalPlayer
+                )
+                return
+            end
+        end
+    end
 end
 
-return module
+-- Module
+local ServerHop = {}
+
+function ServerHop:Teleport(placeId)
+    loadVisited()
+
+    while task.wait(1) do
+        hop(placeId)
+    end
+end
+
+return ServerHop
