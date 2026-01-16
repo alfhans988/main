@@ -673,7 +673,8 @@ if isMobile then
 
     Toggle.MouseButton1Click:Connect(function()
         MainWindow.Visible = true
-        
+        wait(0.1)
+        ScreenGui1:Destroy()
     end)
 end
 
