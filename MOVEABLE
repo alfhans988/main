@@ -644,37 +644,38 @@ function OrionLib:MakeWindow(WindowConfig)
     })
 
     -- Create ScreenGui
+    local isMobile = UserInputService.TouchEnabled 
+    and not UserInputService.KeyboardEnabled 
+    and not UserInputService.MouseEnabled
+
+-- Only create reopen toggle on MOBILE
+if isMobile then
     local ScreenGui1 = Instance.new("ScreenGui")
     ScreenGui1.Name = "ScreenGui"
     ScreenGui1.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
-
     ScreenGui1.ResetOnSpawn = false
 
-    -- Function to create the Toggle button
+    local Toggle = Instance.new("TextButton")
+    Toggle.Name = "Toggle"
+    Toggle.Parent = ScreenGui1
+    Toggle.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    Toggle.Position = UDim2.new(0, 0, 0.45, 0)
+    Toggle.Size = UDim2.new(0, 90, 0, 38)
+    Toggle.Font = Enum.Font.SourceSans
+    Toggle.Text = "Open UI"
+    Toggle.TextColor3 = Color3.fromRGB(248, 248, 248)
+    Toggle.TextSize = 24
+    Toggle.Draggable = true
+    Toggle.Active = true
 
-        local Toggle = Instance.new("TextButton")
-        Toggle.Name = "Toggle"
-        Toggle.Parent = ScreenGui1
-        Toggle.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-        Toggle.Position = UDim2.new(0, 0, 0.454706937, 0)
-        Toggle.Size = UDim2.new(0, 90, 0, 38)
-        Toggle.Font = Enum.Font.SourceSans
-        Toggle.Text = "Open Ui"
-        Toggle.TextColor3 = Color3.fromRGB(248, 248, 248)
-        Toggle.TextSize = 28.000
-        Toggle.Draggable = true
+    local Corner = Instance.new("UICorner")
+    Corner.Parent = Toggle
 
-        local Corner2 = Instance.new("UICorner")
-        Corner2.Name = "Corner"
-        Corner2.Parent = Toggle
-
-        -- When clicked, perform the action and destroy the button
-        Toggle.MouseButton1Click:Connect(function()
-            getgenv().keytoclick = "LeftControl"
-            local vim = game:GetService("VirtualInputManager")
-            vim:SendKeyEvent(true, keytoclick, false, game)
-            Toggle:Destroy() -- Button is now gone
-        end)
+    Toggle.MouseButton1Click:Connect(function()
+        MainWindow.Visible = true
+        
+    end)
+end
 
     WindowConfig.CloseCallback()
   end)
