@@ -648,11 +648,10 @@ function OrionLib:MakeWindow(WindowConfig)
     and not UserInputService.KeyboardEnabled 
     and not UserInputService.MouseEnabled
 
--- Only create reopen toggle on MOBILE
 if isMobile then
     local ScreenGui1 = Instance.new("ScreenGui")
     ScreenGui1.Name = "ScreenGui"
-    ScreenGui1.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+    ScreenGui1.Parent = player:WaitForChild("PlayerGui")
     ScreenGui1.ResetOnSpawn = false
 
     local Toggle = Instance.new("TextButton")
@@ -665,16 +664,43 @@ if isMobile then
     Toggle.Text = "Open UI"
     Toggle.TextColor3 = Color3.fromRGB(248, 248, 248)
     Toggle.TextSize = 24
-    Toggle.Draggable = true
+    Toggle.TextTransparency = 1 -- start invisible
+    Toggle.BackgroundTransparency = 1 -- start invisible
     Toggle.Active = true
+    Toggle.Draggable = true
 
     local Corner = Instance.new("UICorner")
     Corner.Parent = Toggle
 
+    -- APPEARANCE ANIMATION
+    local appearTweenInfo = TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+    local appearTween = TweenService:Create(Toggle, appearTweenInfo, {
+        Size = Toggle.Size,
+        Position = Toggle.Position,
+        TextTransparency = 0,
+        BackgroundTransparency = 0
+    })
+    appearTween:Play()
+
+    -- OPEN & DESTROY ANIMATION
+    local function playOpenAnimation(button)
+        local tweenInfo = TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+        local tweenProperties = {
+            Size = UDim2.new(0, 120, 0, 50),
+            Position = UDim2.new(button.Position.X.Scale, button.Position.X.Offset - 15, button.Position.Y.Scale, button.Position.Y.Offset - 6),
+            TextTransparency = 1,
+            BackgroundTransparency = 1
+        }
+        local tween = TweenService:Create(button, tweenInfo, tweenProperties)
+        tween:Play()
+        tween.Completed:Connect(function()
+            button:Destroy()
+        end)
+    end
+
     Toggle.MouseButton1Click:Connect(function()
         MainWindow.Visible = true
-        wait(0.1)
-        ScreenGui1:Destroy()
+        playOpenAnimation(Toggle)
     end)
 end
 
